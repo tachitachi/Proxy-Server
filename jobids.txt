@@ -1,0 +1,231 @@
+ 
+0: Novice          
+1: Swordman        
+2: Mage            
+3: Archer          
+4: Acolyte         
+5: Merchant        
+6: Thief           
+7: Knight          
+8: Priest          
+9: Wizard          
+10: Blacksmith      
+11: Hunter          
+12: Assassin       
+14: Crusader       
+15: Monk           
+16: Sage           
+17: Rogue          
+24: Gunslinger
+25: Ninja
+4015: Paladin
+4016: Champion
+4017: Professor
+4018: Stalker
+4019: Creator
+4020: Clown
+4021: Gypsy
+4023: Baby          
+4024: Baby Swordman   
+4025: Baby Mage
+4026: Baby Archer   
+4027: Baby Acolyte    
+4028: Baby Merchant
+4029: Baby Thief    
+4030: Baby Knight     
+4031: Baby Priest
+4032: Baby Wizard   
+4033: Baby Blacksmith 
+4034: Baby Hunter
+4035: Baby Assassin 
+4037: Baby Crusader   
+4038: Baby Monk
+4039: Baby Sage     
+4040: Baby Rogue      
+4041: Baby Alchemist
+4042: Baby Bard     
+4043: Baby Dancer     
+4045: Super Baby
+4046: Taekwon
+4047: Star Gladiator
+4049: Soul Linker
+4054 RK Rune Knight	(Base 2nd to 3rd)
+4055 WL Warlock		(Base 2nd to 3rd)
+4056 RA Ranger		(Base 2nd to 3rd)
+4057 AB Arch Bishop	(Base 2nd to 3rd)
+4058 NC Mechanic	(Base 2nd to 3rd)
+4059 GC Guillotine Cross(Base 2nd to 3rd)
+4060 RK Rune Knight	(Trans 2nd to 3rd)
+4061 WL Warlock		(Trans 2nd to 3rd)
+4062 RA Ranger		(Trans 2nd to 3rd)
+4063 AB Arch Bishop	(Trans 2nd to 3rd)
+4064 NC Mechanic	(Trans 2nd to 3rd)
+4065 GC Guillotine Cross(Trans 2nd to 3rd)
+4066 LG Royal Guard	(Base 2nd to 3rd)
+4067 SO Sorcerer	(Base 2nd to 3rd)
+4068 MI Minstrel	(Base 2nd to 3rd)
+4069 WA Wanderer	(Base 2nd to 3rd)
+4070 SR Sura		(Base 2nd to 3rd)
+4071 GN Genetic		(Base 2nd to 3rd)
+4072 SC Shadow Chaser	(Base 2nd to 3rd)
+4073 LG Royal Guard	(Trans 2nd to 3rd)
+4074 SO Sorcerer	(Trans 2nd to 3rd)
+4075 MI Minstrel	(Trans 2nd to 3rd)
+4076 WA Wanderer	(Trans 2nd to 3rd)
+4077 SR Sura		(Trans 2nd to 3rd)
+4078 GN Genetic		(Trans 2nd to 3rd)
+4079 SC Shadow Chaser	(Trans 2nd to 3rd)
+4080 RK Rune Knight Mount	(Base 2nd to 3rd)	(Green Dragon)
+4081 RK Rune Knight Mount	(Trans 2nd to 3rd)	(Green Dragon)
+4082 LG Royal Guard Mount	(Base 2nd to 3rd)
+4083 LG Royal Guard Mount	(Trans 2nd to 3rd)
+4084 RA Ranger Mount		(Base 2nd to 3rd)
+4085 RA Ranger Mount		(Trans 2nd to 3rd)
+4086 NC Mechanic Mount		(Base 2nd to 3rd)
+4087 NC Mechanic Mount		(Trans 2nd to 3rd)
+4088 RK Rune Knight Mount	(Base 2nd to 3rd)	(Black Dragon)
+4089 RK Rune Knight Mount	(Trans 2nd to 3rd)	(Black Dragon)
+4090 RK Rune Knight Mount	(Base 2nd to 3rd)	(White Dragon)
+4091 RK Rune Knight Mount	(Trans 2nd to 3rd)	(White Dragon)
+4092 RK Rune Knight Mount	(Base 2nd to 3rd)	(Blue Dragon)
+4093 RK Rune Knight Mount	(Trans 2nd to 3rd)	(Blue Dragon)
+4094 RK Rune Knight Mount	(Base 2nd to 3rd)	(Red Dragon)
+4095 RK Rune Knight Mount	(Trans 2nd to 3rd)	(Red Dragon)
+
+
+if ($jobID = 7) goto Knight
+if ($jobID = 13) goto Knight
+if ($jobID = 4008) goto Knight
+if ($jobID = 4168) goto Knight
+if ($jobID = 4014) goto Knight
+if ($jobID = 174) goto Knight
+if ($jobID = 4030) goto Knight
+if ($jobID = 4036) goto Knight
+if ($jobID = 4054) goto Knight
+if ($jobID = 4060) goto Knight
+if ($jobID = 4088) goto Knight
+if ($jobID = 4089) goto Knight
+if ($jobID = 4090) goto Knight
+if ($jobID = 4091) goto Knight
+if ($jobID = 4092) goto Knight
+if ($jobID = 4093) goto Knight
+if ($jobID = 4094) goto Knight
+if ($jobID = 4095) goto Knight
+if ($jobID = 4080) goto Knight
+if ($jobID = 4081) goto Knight
+if ($jobID = 4096) goto Knight
+if ($jobID = 4109) goto Knight
+if ($jobID = 12) goto Assassin
+if ($jobID = 4013) goto Assassin
+if ($jobID = 173) goto Assassin
+if ($jobID = 4035) goto Assassin
+if ($jobID = 4059) goto Assassin
+if ($jobID = 4065) goto Assassin
+if ($jobID = 4101) goto Assassin
+if ($jobID = 10) goto Blacksmith
+if ($jobID = 4011) goto Blacksmith
+if ($jobID = 171) goto Blacksmith
+if ($jobID = 4033) goto Blacksmith
+if ($jobID = 4058) goto Blacksmith
+if ($jobID = 4064) goto Blacksmith
+if ($jobID = 4086) goto Blacksmith
+if ($jobID = 4087) goto Blacksmith
+if ($jobID = 4100) goto Blacksmith
+if ($jobID = 4112) goto Blacksmith
+if ($jobID = 14) goto Crusader
+if ($jobID = 21) goto Crusader
+if ($jobID = 4015) goto Crusader
+if ($jobID = 175) goto Crusader
+if ($jobID = 4022) goto Crusader
+if ($jobID = 4037) goto Crusader
+if ($jobID = 4044) goto Crusader
+if ($jobID = 4066) goto Crusader
+if ($jobID = 4073) goto Crusader
+if ($jobID = 4082) goto Crusader
+if ($jobID = 4083) goto Crusader
+if ($jobID = 4102) goto Crusader
+if ($jobID = 4110) goto Crusader
+if ($jobID = 11) goto Hunter
+if ($jobID = 4012) goto Hunter
+if ($jobID = 172) goto Hunter
+if ($jobID = 4034) goto Hunter
+if ($jobID = 4056) goto Hunter
+if ($jobID = 4062) goto Hunter
+if ($jobID = 4084) goto Hunter
+if ($jobID = 4085) goto Hunter
+if ($jobID = 4098) goto Hunter
+if ($jobID = 4111) goto Hunter
+if ($jobID = 16) goto Sage
+if ($jobID = 4017) goto Sage
+if ($jobID = 177) goto Sage
+if ($jobID = 4039) goto Sage
+if ($jobID = 4067) goto Sage
+if ($jobID = 4074) goto Sage
+if ($jobID = 4103) goto Sage
+if ($jobID = 8) goto Priest
+if ($jobID = 4009) goto Priest
+if ($jobID = 169) goto Priest
+if ($jobID = 4031) goto Priest
+if ($jobID = 4057) goto Priest
+if ($jobID = 4063) goto Priest
+if ($jobID = 4099) goto Priest
+if ($jobID = 15) goto Monk
+if ($jobID = 4016) goto Monk
+if ($jobID = 176) goto Monk
+if ($jobID = 4038) goto Monk
+if ($jobID = 4070) goto Monk
+if ($jobID = 4077) goto Monk
+if ($jobID = 4106) goto Monk
+if ($jobID = 9) goto Wizard
+if ($jobID = 4010) goto Wizard
+if ($jobID = 170) goto Wizard
+if ($jobID = 4032) goto Wizard
+if ($jobID = 4055) goto Wizard
+if ($jobID = 4061) goto Wizard
+if ($jobID = 4097) goto Wizard
+if ($jobID = 17) goto Rogue
+if ($jobID = 4018) goto Rogue
+if ($jobID = 178) goto Rogue
+if ($jobID = 4040) goto Rogue
+if ($jobID = 4072) goto Rogue
+if ($jobID = 4079) goto Rogue
+if ($jobID = 4108) goto Rogue
+if ($jobID = 18) goto Alchemist
+if ($jobID = 4019) goto Alchemist
+if ($jobID = 179) goto Alchemist
+if ($jobID = 4041) goto Alchemist
+if ($jobID = 4071) goto Alchemist
+if ($jobID = 4078) goto Alchemist
+if ($jobID = 4107) goto Alchemist
+if ($jobID = 19) goto Bard
+if ($jobID = 20) goto Bard
+if ($jobID = 4020) goto Bard
+if ($jobID = 4021) goto Bard
+if ($jobID = 180) goto Bard And Dancer
+if ($jobID = 181) goto Bard And Dancer
+if ($jobID = 4042) goto Bard And Dancer
+if ($jobID = 4043) goto Bard And Dancer
+if ($jobID = 4068) goto Bard And Dancer
+if ($jobID = 4075) goto Bard
+if ($jobID = 4069) goto Bard And Dancer
+if ($jobID = 4076) goto Bard
+if ($jobID = 4104) goto Bard And Dancer
+if ($jobID = 4105) goto Bard And Dancer
+if ($jobID = 4047) goto Star
+if ($jobID = 4048) goto Star
+if ($jobID = 4049) goto Linker
+if ($jobID = 23) goto Sunop
+if ($jobID = 161) goto Rebith
+if ($jobID = 162) goto Rebith
+if ($jobID = 163) goto Rebith
+if ($jobID = 164) goto Rebith
+if ($jobID = 165) goto Rebith
+if ($jobID = 166) goto Rebith
+if ($jobID = 167) goto Rebith
+if ($jobID = 4001) goto Rebith
+if ($jobID = 4002) goto Rebith
+if ($jobID = 4003) goto Rebith
+if ($jobID = 4004) goto Rebith
+if ($jobID = 4005) goto Rebith
+if ($jobID = 4006) goto Rebith
+if ($jobID = 4007) goto Rebith
