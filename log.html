@@ -1,0 +1,501 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Ragnarok Commands</title>
+    <style>
+
+#accountInfoSection{
+	border: 1px solid black;
+	height: 600px;
+	width: 600px;
+	margin-top: 5px;
+	overflow: scroll;
+	font-family: "Lucida Console", Monospace, serif;
+	float: left;
+	padding-left: 10px;
+}
+
+#logsection{
+	border: 1px solid black;
+	height: 600px;
+	width: 700px;
+	margin-top: 5px;
+	overflow: scroll;
+	font-family: "Lucida Console", Monospace, serif;
+	float: left;
+}
+
+.logline{
+	
+}
+
+#mapsection{
+	float: left;
+	margin-top: 10px;
+	margin-left: 10px;
+	position: relative;
+}
+
+#myLocation {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 4px;
+	height: 4px;
+	background-color: red;
+	z-index: 100;
+}
+
+.mapmarker{
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 1px;
+	height: 1px;
+	background-color: #8C0505;
+	z-index: 10;
+	pointer-events: none;
+}
+
+.mapmarker.closed{
+	background-color: blue;
+	z-index: 9;
+}
+
+.mapmarker.split{
+	width: 2px;
+	height: 2px;
+	background-color: red;
+	z-index: 50;
+}
+
+.tab-left { 
+	margin-left: 10px;
+}
+
+
+    </style>
+	<script src="/socket.io/socket.io.js"></script>
+	<script src="underscore-min.js"></script>
+	<script src="recv.js"></script>
+	<script src="send.js"></script>
+	<script src="parse.js"></script>
+	<script src="nav.js"></script>
+	<script src="skills.js"></script>
+	<script src="items.js"></script>
+	<script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+
+  </head>
+  <body>
+  
+	<div class="content">
+	
+		<button id="toggleRecvLogging">Toggle Recv Logging</button>
+		<button id="toggleSendLogging">Toggle Send Logging</button>
+		<button id="toggleNodelay">Toggle Nodelay</button>
+		<button id="togglePneumaGrid">Toggle Pneuma Grid</button>
+		<button id="toggleInfoTimer">Toggle Info Timer</button>
+		
+		<select id="accountSelect">
+			<option value="1851380">Itachi</option>
+			<option value="3771195">Free Bwings</option>
+			<option value="3802723">Tofu</option>
+			<option value="4769929">Chemical Wedding</option>
+			<option value="3913955">Lilitrash</option>
+			<option value="4227015">Vendor</option>
+		</select>
+		
+		
+		<button id="clientPacket">Send To Client</button>
+		<input id="inClientPacket"></input>
+		<button id="serverPacket">Send To Server</button>
+		<input id="inServerPacket"></input>
+		
+		
+		<button id="changeJob">Change Job</button>
+		<select id="jobSelect">
+			<option value="ef 0f">Shadow Chaser</option>
+			<option value="0c 10">Baby Shadow Chaser</option>
+			<option value="09 00">Wizard</option>
+			<option value="0f 00">Monk</option>
+			<option value="b0 0f">Champion</option>
+			<option value="ed 0f">Sura</option>
+			<option value="c6 0f">Baby Monk</option>
+			<option value="0a 10">Baby Sura</option>
+		</select>
+		
+		
+		<button id="monsterTransform">Monster Transform</button>
+		<select id="monsterSelect">
+			<option value="0">None</option>
+			<option value="1751">Valkyrie Randgris</option>
+			<option value="2238">Champion Chen</option>
+			<option value="2239">Stalker Gertie</option>
+			<option value="1874">Beelzebub</option>
+			<option value="1370">Succubus</option>
+			<option value="1374">Incubus</option>
+			<option value="1109">Deviruchi</option>
+			<option value="2319">Buwaya</option>
+			<option value="2529">Faceworm Queen</option>
+			<option value="1721">Dragon Egg</option>
+		</select>
+		
+		<div id="accountInfoSection">
+		
+		</div>
+		
+		<div id="logsection">
+		
+		
+		</div>
+		
+		<div id='mapsection'>
+			<div id='myLocation'></div>
+			<img id='walkmap'>
+		</div>
+		
+
+	</div>
+
+	<script type="text/javascript">
+	  
+		var socket = io();
+		var xLocation = 0;
+		var yLocation = 0;
+		var width = 0;
+		var height = 0;
+		var currentMap = null;
+		var gAccountId = 0;
+		var gInfoTimer = null;
+		
+		//PACKET_BUFFER = new PacketBuffer(RECV, 0);
+		
+		var prevLog = null;
+		socket.on('log recv', function(msg){
+			$logsection.append(msg);
+			
+			console.log(msg);
+			
+			$logsection.stop().animate({
+			  scrollTop: $logsection[0].scrollHeight
+			}, 800);
+		});
+		
+		socket.on('log send', function(msg){
+			//console.log(msg);
+			console.log(DecimalToHex(msg));
+			testmsg = msg;
+		});
+		
+		
+		
+		function SetButtonText()
+		{
+			$('#toggleRecvLogging').text(bRecvLoggingEnabled ? 'Disable Recv Logging' : 'Enable Recv Logging');
+			$('#toggleSendLogging').text(bSendLoggingEnabled ? 'Disable Send Logging' : 'Enable Send Logging');
+			$('#toggleNodelay').text(bNodelayEnabled ? 'Disable Nodelay' : 'Enable Nodelay');
+			$('#togglePneumaGrid').text(bPneumaGridEnabled ? 'Disable Pneuma Grid' : 'Enable Pneuma Grid');
+			$('#toggleInfoTimer').text(bInfoTimerEnabled ? 'Disable Info Timer' : 'Enable Info Timer');
+		}
+		
+		var bRecvLoggingEnabled = false;
+		function ToggleRecvLogging()
+		{
+			if(bRecvLoggingEnabled){
+				bRecvLoggingEnabled = false;
+				socket.emit('enableRecvLogging', false);
+			}
+			else {
+				bRecvLoggingEnabled = true;
+				socket.emit('enableRecvLogging', true);
+			}
+			
+			SetButtonText();
+		}
+		
+		var bSendLoggingEnabled = false;
+		function ToggleSendLogging()
+		{
+			if(bSendLoggingEnabled){
+				bSendLoggingEnabled = false;
+				socket.emit('enableSendLogging', false);
+			}
+			else {
+				bSendLoggingEnabled = true;
+				socket.emit('enableSendLogging', true);
+			}
+			
+			SetButtonText();
+		}
+		
+		var bNodelayEnabled = true;
+		function ToggleNodelay()
+		{
+			if(bNodelayEnabled){
+				bNodelayEnabled = false;
+				socket.emit('enableNodelay', false);
+			}
+			else {
+				bNodelayEnabled = true;
+				socket.emit('enableNodelay', true);
+			}
+			
+			SetButtonText();
+		}
+		
+		var bPneumaGridEnabled = true;
+		function TogglePneumaGrid()
+		{
+			if(bPneumaGridEnabled){
+				bPneumaGridEnabled = false;
+				socket.emit('enablePneumaGrid', false);
+			}
+			else {
+				bPneumaGridEnabled = true;
+				socket.emit('enablePneumaGrid', true);
+			}
+			
+			SetButtonText();
+		}
+		
+		var bInfoTimerEnabled = false;
+		function ToggleInfoTimer()
+		{
+			if(bInfoTimerEnabled){
+				bInfoTimerEnabled = false;
+				clearTimeout(gInfoTimer);
+			}
+			else {
+				bInfoTimerEnabled = true;
+				GetAccountInfo(gAccountId);
+				gInfoTimer = setInterval(function(){
+					GetAccountInfo(gAccountId);
+				}, 5000);
+			}
+			
+			SetButtonText();
+		}
+		
+		function onSelectAccount(){
+			var value = parseInt($(this).val());
+			SelectAccount(value);
+		}
+		
+		function SelectAccount(accountId){
+			console.log(accountId);
+			gAccountId = accountId;
+			socket.emit('setAccount', {account:accountId});
+		}
+		
+		function send(msg)
+		{
+			socket.emit('test');
+		}
+		
+		function SendClientPacket(){
+			//socket.emit('send to client', 'hello');
+			var packet = $('#inClientPacket').val();
+			
+			packet = packet.replace(/[\[\]]/g, '');
+			packet = packet.trim();
+			
+			if(packet != ''){				
+				//console.log($packet.val());
+				console.log(packet);
+				socket.emit('send to client', packet);
+			}
+		}
+		
+		function SendServerPacket(){
+			//socket.emit('send to client', 'hello');
+			var packet = $('#inServerPacket').val();
+			
+			packet = packet.replace(/[\[\]]/g, '');
+			packet = packet.trim();
+			
+			if(packet != ''){				
+				//console.log($packet.val());
+				console.log(packet);
+				socket.emit('send to server', packet);
+			}
+		}
+		
+		function ChangeJob(){
+			var value = $('#accountSelect').val();
+			var account = IntToHexString(gAccountId, 4);
+			
+			var job = $('#jobSelect').val();
+			
+			var packet = 'd7 01 ' + account + ' 00 ' + job + ' 00 00';
+			console.log(packet);
+			socket.emit('send to client', packet);
+			
+			
+		}
+		
+		
+		
+		function MonsterTransform(){
+			var value = $('#accountSelect').val();
+			var account = '00 00 00 00';
+			if(value == 0){
+				account = 'f4 3f 1c 00';
+			}
+			else if(value == 1){
+				account = '3b 8b 39 00';
+			}
+			else if(value == 2){
+				account = '63 06 3a 00';
+			}
+			else if(value == 3){
+				account = '89 c8 48 00';
+			}
+			else if(value == 4){
+				account = 'e3 b8 3b 00';
+			}
+			
+			var monster = IntToHexString($('#monsterSelect').val(), 2);
+			
+			//ff 08 f4 3f 1c 00 6d 02 15 1d 08 00 be 08 00 00 1c 03 00 00 00 00 00 00
+			var packet = 'ff 08 ' + account + ' 6d 02 15 1d 08 00 ' + monster + ' 00 00 1c 03 00 00 00 00 00 00';
+			console.log(packet);
+			socket.emit('send to client', packet);
+			
+		}
+		
+		function SelfChatRecv(msg){
+			var header = '8e 00';
+			var len = IntToHexString(msg.length + 5, 2);
+			var contents = AsciiToHex(msg).join(' ');
+			
+			var packet = '{0} {1} {2}'.format(header, len, contents);
+			//console.log(msg, packet);
+			socket.emit('send to client', packet);
+		}
+		
+		$('#toggleRecvLogging').click(ToggleRecvLogging);
+		$('#toggleSendLogging').click(ToggleSendLogging);
+		$('#toggleNodelay').click(ToggleNodelay);
+		$('#togglePneumaGrid').click(TogglePneumaGrid);
+		$('#toggleInfoTimer').click(ToggleInfoTimer);
+		
+		$('#accountSelect').change(onSelectAccount);
+		
+		$('#clientPacket').click(SendClientPacket);
+		$('#serverPacket').click(SendServerPacket);
+		
+		$('#changeJob').click(ChangeJob);
+		$('#monsterTransform').click(MonsterTransform);
+		
+		$('#walkmap').click(function(event){
+			var $this = $(this);
+			var x = event.offsetX;
+			var y = $this.height() - event.offsetY;
+			console.log(x, y);
+			WalkTo(x, y);
+		});
+		
+		function WalkTo(x, y){
+			var pathTiming = FindPath(mapdata[currentMap], [xLocation, yLocation], [x, y]);
+			socket.emit('SetWalkPlan', {accountId: gAccountId, plan: pathTiming});
+		}
+		
+		function loadJSON(filepath, callback) {   
+
+			var xobj = new XMLHttpRequest();
+				xobj.overrideMimeType("application/json");
+			xobj.open('GET', filepath, true); // Replace 'my_data' with the path to your file
+			xobj.onreadystatechange = function () {
+				  if (xobj.readyState == 4 && xobj.status == "200") {
+					// Required use of an anonymous callback as .open will NOT return a value but simply returns undefined in asynchronous mode
+					callback(xobj.responseText);
+				  }
+			};
+			xobj.send(null);  
+		 }
+		 
+		 var mapdata = {};
+		
+		function LoadMap(mapname){
+		
+			RemoveMarkers();
+		
+			if(mapname.indexOf('@') > 1){
+				mapname = mapname.slice(mapname.indexOf('@') - 1);
+			}
+		
+			var $map = $('#walkmap');
+			$map.attr('src', 'maps\\{0}.png'.format(mapname));
+			
+			// check if mapdata already in cache
+			if(!mapdata.hasOwnProperty(mapname)){
+				loadJSON('mapdata\\{0}.txt'.format(mapname), function(response) {
+				  // Parse JSON string into object
+					var actual_JSON = JSON.parse(response);
+					mapdata[mapname] = actual_JSON;
+					height = actual_JSON.length;
+					width = actual_JSON[0].length;
+				 });
+			}
+			else{
+				console.log('{0} already in the cache'.format(mapname));
+				height = mapdata[mapname].length;
+				width = mapdata[mapname][0].length;
+			}
+			
+			currentMap = mapname;
+			
+		}
+		
+		function GetAccountInfo(accountId){
+			socket.emit('GetAccountInfo', {accountId: accountId});
+		}
+		
+		function ChangeLocation(coords){
+			var $cursor = $('#myLocation');
+			$cursor.css({top: height - coords.y, left: coords.x});
+			xLocation = coords.x;
+			yLocation = coords.y;
+		}
+		
+		function AddMarker(position, mode){
+			var x = position[0];
+			var y = height - position[1];
+			
+			var modeString = '';
+			if(mode == 1){
+				modeString = 'closed';
+			}
+			else if(mode == 2){
+				modeString = 'split';
+			}
+			
+			$('#mapsection').append('<div class="mapmarker {0}" style="top: {1}px; left: {2}px;"></div>'.format(modeString, y, x));
+		}
+		
+		function RemoveMarkers(){
+			$('.mapmarker').remove();
+		}
+		
+		
+		
+		function Init(){
+		
+			SelectAccount(1851380); // default to Itachi
+			LoadMap('prontera');
+			
+			GetAccountInfo(gAccountId);
+			//gInfoTimer = setInterval(function(){
+			//	GetAccountInfo(gAccountId);
+			//}, 5000);
+		}
+		
+		Init();
+		
+		
+
+		
+	  
+	</script>
+  </body>
+</html>

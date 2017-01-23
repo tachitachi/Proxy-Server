@@ -1227,7 +1227,7 @@ function CreateRequest(host)
 						SendToWeb('log send', bufToList(packet.bytes));
 					}
 					
-					Log(packet.bytes);
+					Log(2, accountInfo.accountId, packet.bytes);
 					
 					//console.log(packet.bytes);
 					if(HandleSend(packet, accountInfo, proxySocket, serviceSocket)){
@@ -1273,7 +1273,7 @@ function CreateRequest(host)
 					SendToWeb('log recv', bufToList(packet.bytes));
 				}
 				
-				Log(packet.bytes);
+				Log(1, accountInfo.accountId, packet.bytes);
 				
 				if(HandleRecv(packet, accountInfo, proxySocket, serviceSocket)){
 					// add to packet blob
@@ -1370,9 +1370,25 @@ function LogRequest(host)
 }
 
 
-function Log(packet){
+function Log(type, ID, bytes){
 	if(LogServer !== null){
-		LogServer.write(packet);
+		var header;
+		if (type === 1){
+			header = 0x0001;
+		}
+		else if(type === 2){
+			header= 0x0002;
+		}
+		else{
+			// Unknown type?
+			return;
+		}
+		if (ID === undefined || ID === null){
+			ID = 0;
+		}
+		var bufferLength = 8 + bytes.length;
+		var logPacket = CreateLogPacketBuffer(header, {len: bufferLength, ID: ID, data: bytes}, bufferLength);
+		LogServer.write(logPacket);
 	}
 }
  

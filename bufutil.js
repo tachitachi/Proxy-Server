@@ -126,10 +126,12 @@ function _CreatePacket(buf, definition, data){
 	for(var name in data){
 		var nameInfo = definition.datamap.hasOwnProperty(name) ? definition.datamap[name] : null;
 		if(nameInfo){
+			console.log('name', name);
 			var start = nameInfo.start;
 			var end = nameInfo.end;
 			var type = nameInfo.type;
 			var value = data[name];
+			console.log('value', value);
 			switch(type){
 			case 'int':
 			case 'long':
@@ -144,6 +146,13 @@ function _CreatePacket(buf, definition, data){
 				buf[start + 0] = value[0];
 				buf[start + 1] = value[1];
 				buf[start + 2] = value[2];
+				break;
+			case 'byte':
+				console.log('byte', value);
+				// Go for fixed length, or until end of buffer
+				for(var i = 0; i < end - start || (start + i) < buf.length; i++){
+					buf[start + i] = value[i];
+				}
 				break;
 			default:
 				// non ints not supported yet

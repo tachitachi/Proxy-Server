@@ -5,7 +5,7 @@ var LOGMESSAGE = {
 		log: 2,
 		data: [
 			{name: 'len', size: 2, type: 'int', log: 1},
-			{name: 'ID', size: 2, type: 'int', log: 1},
+			{name: 'ID', size: 4, type: 'int', log: 1},
 			{name: 'data', size: -1, type: 'byte', log: 1},
 		],
 	},
@@ -15,20 +15,36 @@ var LOGMESSAGE = {
 		log: 2,
 		data: [
 			{name: 'len', size: 2, type: 'int', log: 1},
-			{name: 'ID', size: 2, type: 'int', log: 1},
+			{name: 'ID', size: 4, type: 'int', log: 1},
 			{name: 'data', size: -1, type: 'byte', log: 1},
 		],
 	},
 }
 
-function CreateLogPacketBuffer(header, data){
+for(var i in LOGMESSAGE){
+	var packetDef = LOGMESSAGE[i];
+	packetDef.datamap = {};
+	var startIndex = 2;
+	for(var i = 0; i < packetDef.data.length; i++){
+		var data = packetDef.data[i];
+		var endIndex = data.size > 0 ? startIndex + data.size : -1;
+		packetDef.datamap[data.name] = {index: i, start: startIndex, end: endIndex, type: data.type, log: data.log};
+		startIndex = endIndex;
+	}
+}
+
+function CreateLogPacketBuffer(header, data, len){
 	if(LOGMESSAGE.hasOwnProperty(header)){
 		var packetDef = LOGMESSAGE[header];
-		for(var i = 0; i < packetDef.length; i++){
-			var buf = new Buffer(packetDef.length);
+		var length = packetDef.length;
+		if(packetDef.length < 2 && len !== undefined && len > 1){
+			length = len;
+		}
+		for(var i = 0; i < length; i++){
+			var buf = new Buffer(length);
 			buf[0] = header & 0xff;
 			buf[1] = (header >> 8) & 0xff;
-			for(var i = 2; i < packetDef.length; i++){
+			for(var i = 2; i < length; i++){
 				buf[i] = 0;
 			}
 			return _CreatePacket(buf, packetDef, data);
