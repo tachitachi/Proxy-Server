@@ -282,6 +282,10 @@ var mayaPurplePacket = new Buffer([0x3f, 0x04, 0xb8, 0x00, 0xf4, 0x3f, 0x1c, 0x0
 function HandleSend(packet, accountInfo, proxySocket, serviceSocket){
 	
 	switch(packet.header){
+	case 0x0149:
+		// Block all mute packets
+		console.log('bypassing mute');
+		return false;
 	case 0x00bf:
 		// emote
 		var emoteId = packet.data[SEND[packet.header].datamap.emoteId.index].value;

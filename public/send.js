@@ -8,6 +8,15 @@ var SEND = {
 			{name: 'type', size: 1, type: 'int', log: 2},
 		],
 	},
+	0x008c: {
+		name: 'public_chat', 
+		length: -1, 
+		log: 2,
+		data: [
+			{name: 'len', size: 2, type: 'int', log: 2},
+			{name: 'message', size: -1, type: 'string', log: 2},
+		],
+	},
 	0x00a7: {
 		name: 'send_item_use', 
 		length: 8, 
@@ -49,6 +58,16 @@ var SEND = {
 		log: 2,
 		data: [
 			{name: 'ID', size: 4, type: 'int', log: 2},
+		],
+	},
+	0x0149: {
+		name: 'GM_mute', 
+		length: 9, 
+		log: 2,
+		data: [
+			{name: 'ID', size: 4, type: 'int', log: 2},
+			{name: 'type', size: 1, type: 'int', log: 2},
+			{name: 'time', size: 2, type: 'int', log: 2},
 		],
 	},
 	0x01b2: {

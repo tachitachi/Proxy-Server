@@ -95,6 +95,7 @@ function HandleLog(packet){
 	for (p in parsedPackets){
 		
 		// write binary to one file, and text to another
+		// separate each session's log somehow
 		
 		fs.appendFile(path.join('logs', ID + '.log'), parsedPackets[p].bytes, 'binary', function(err) {
 			if(err) {
