@@ -21,8 +21,12 @@ eval(fs.readFileSync('public/refill.js').toString());
 eval(fs.readFileSync('public/monstermod.js').toString());
 eval(fs.readFileSync('public/rareitem.js').toString());
 
-eval(fs.readFileSync('player.js').toString());
+//eval(fs.readFileSync('player.js').toString());
 eval(fs.readFileSync('bufutil.js').toString());
+
+
+// TODO: Need better name than itemutil
+eval(fs.readFileSync('itemutil.js').toString());
 eval(fs.readFileSync('constants.js').toString());
 
 eval(fs.readFileSync('LogMessage.js').toString());
@@ -254,6 +258,58 @@ io.on('connection', function(socket){
 		// }
 		//RECVMOD[data.header].response[data.pos].data[data.field] = data.value;
 		RECVMOD[data.header][data.pos].response[0].data[data.field] = data.value;
+	});
+	
+	socket.on('refill', function(data){
+		// data = {
+		//	accountId: ID,
+		// 	items: [
+		// 		{
+		// 			ID: X,
+		// 			amount: Y
+		// 		}
+		// 	]
+		// }
+		
+		console.log(data);
+		
+		var accountId = data.accountId;
+		if(!connectedAccounts.hasOwnProperty(accountId)){
+			console.log('no connected account');
+			return;
+		}
+		if(!connectionByAccount.hasOwnProperty(accountId)){
+			console.log('no server connection');
+			return;
+		}
+		
+		var accountInfo = connectedAccounts[accountId];
+		var serviceSocket = connectionByAccount[accountId].server;
+		
+		
+		
+		var refillData = data.items;
+		
+		var storagePackets = storageRefill(refillData, accountInfo);
+		console.log(storagePackets);
+		
+		if(storagePackets.length > 0){
+			var SendPackets = function(arr, accountInfo, serviceSocket){
+				if (!accountInfo.isStorageOpen){
+					return;
+				}
+				if(arr.length > 0){
+					var packet = arr.pop();
+					serviceSocket.write(packet);
+					//console.log(bufPrint(packet));
+					setTimeout(SendPackets, 500, arr, accountInfo, serviceSocket);
+				}
+			}
+			setTimeout(SendPackets, 500, storagePackets, accountInfo, serviceSocket);
+		}
+		
+		
+		
 	});
 	
   
@@ -513,7 +569,10 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 			dropPacket = true;
 		}
 		break;
-		
+	
+	case 0x00f8:
+		accountInfo.isStorageOpen = false;
+		break;
 	case 0x01ff:
 	//case 0x0088:
 		//being_slide
@@ -838,6 +897,8 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 		accountInfo.storage = {};
 		accountInfo.storageByIndex = {};
 		
+		accountInfo.isStorageOpen = true;
+		
 		var itemInfoList = packet.data[RECV[packet.header].datamap.itemInfo.index].value;
 		for(var i = 0; i < itemInfoList.length; i++){
 			var itemInfo = itemInfoList[i];
@@ -852,53 +913,27 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 			accountInfo.storageByIndex[index] = itemId;
 		}
 		
-		var storagePackets = [];
+		//var storagePackets = [];
 		
 		// loop over every item in refill, and see what needs to happen
 		//console.log(accountInfo.name);
 		if(accountInfo.name !== null && refill.hasOwnProperty(accountInfo.name)){
 			var refillData = refill[accountInfo.name];
-			for(var itemId in refillData){
-				var inventoryData = {index: 0, amount: 0}; //accountInfo.inventory[itemId];
-				var storageData = {index: 0, amount: 0}; //accountInfo.storage[itemId];
-				
-				if(accountInfo.inventory.hasOwnProperty(itemId))
-					inventoryData = accountInfo.inventory[itemId];
-				if(accountInfo.storage.hasOwnProperty(itemId))
-					storageData = accountInfo.storage[itemId];
-				
-				var targetAmount = refillData[itemId];
-				
-				// put items back in storage
-				if(inventoryData.index && inventoryData.amount > 0 && inventoryData.amount > targetAmount){
-					var putBackAmount = inventoryData.amount - targetAmount;
-					if(putBackAmount > 0){
-						//console.log('[{0}] Too many of item [{1}] at [{2}], putting back {3}'.format(accountInfo.accountId, itemId, inventoryData.index, putBackAmount));
-						var storeItemPacket = CreateSendPacketBuffer(0x0364, {index: inventoryData.index, amount: putBackAmount});
-						storagePackets.push(storeItemPacket);
-					}
-				}
-				// extract items from storage
-				else if(storageData.index && storageData.amount > 0 && inventoryData.amount < targetAmount){
-					var pullOutAmount = Math.min(targetAmount - inventoryData.amount, storageData.amount - 1);
-					if(pullOutAmount > 0){
-						//console.log('[{0}] Not enough of item [{1}] at [{2}], pulling out {3}'.format(accountInfo.accountId, itemId, storageData.index, pullOutAmount));
-						var withdrawItemPacket = CreateSendPacketBuffer(0x0365, {index: storageData.index, amount: pullOutAmount});
-						storagePackets.push(withdrawItemPacket);
-					}
-				}
-			}
+			var storagePackets = storageRefill(refillData, accountInfo);
 			
 			if(storagePackets.length > 0){
-				var SendPackets = function(arr){
+				var SendPackets = function(arr, accountInfo){
+					if (!accountInfo.isStorageOpen){
+						return;
+					}
 					if(arr.length > 0){
 						var packet = arr.pop();
 						serviceSocket.write(packet);
 						//console.log(bufPrint(packet));
-						setTimeout(SendPackets, 500, arr);
+						setTimeout(SendPackets, 500, arr, accountInfo);
 					}
 				}
-				setTimeout(SendPackets, 500, storagePackets);
+				setTimeout(SendPackets, 500, storagePackets, accountInfo);
 			}
 		}
 		

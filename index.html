@@ -15,7 +15,7 @@
 	padding-left: 10px;
 }
 
-#logsection{
+#refillsection{
 	border: 1px solid black;
 	height: 600px;
 	width: 700px;
@@ -23,6 +23,10 @@
 	overflow: scroll;
 	font-family: "Lucida Console", Monospace, serif;
 	float: left;
+}
+
+.doRefill{
+	float: right;
 }
 
 .logline{
@@ -148,8 +152,9 @@
 		
 		</div>
 		
-		<div id="logsection">
-		
+		<div id="refillsection">
+			<div>Refill</div>
+			<button class="doRefill">Do Refill</button>
 		
 		</div>
 		
@@ -290,24 +295,24 @@
 			//console.log(msg);
 			console.log(DecimalToHex(msg));
 			
-			var loglines = ParsePackets(SEND_BUFFER, msg);
-			var $logsection = $('#logsection');
-			for(var i in loglines){
-				if(loglines[i].log >= 0){
-					//if(prevLog !== null){
-					//	var html = '<div class="logline">{0}</div>'.format(prevLog.toString(0));
-					//	$logsection.append(html);
-					//}
-					var html = '<div class="logline send">{0}</div>'.format(loglines[i].toString(0));
-					$logsection.append(html);
-					console.log(DecimalToHex(loglines[i].bytes));
-				}
-				prevLog = loglines[i];
-			}
-			
-			$logsection.stop().animate({
-			  scrollTop: $logsection[0].scrollHeight
-			}, 800);
+			//var loglines = ParsePackets(SEND_BUFFER, msg);
+			//var $logsection = $('#logsection');
+			//for(var i in loglines){
+			//	if(loglines[i].log >= 0){
+			//		//if(prevLog !== null){
+			//		//	var html = '<div class="logline">{0}</div>'.format(prevLog.toString(0));
+			//		//	$logsection.append(html);
+			//		//}
+			//		var html = '<div class="logline send">{0}</div>'.format(loglines[i].toString(0));
+			//		$logsection.append(html);
+			//		console.log(DecimalToHex(loglines[i].bytes));
+			//	}
+			//	prevLog = loglines[i];
+			//}
+			//
+			//$logsection.stop().animate({
+			//  scrollTop: $logsection[0].scrollHeight
+			//}, 800);
 			
 		});
 		
@@ -679,6 +684,32 @@
 			//gInfoTimer = setInterval(function(){
 			//	GetAccountInfo(gAccountId);
 			//}, 5000);
+			
+			$('#refillsection').on('click', 'button.add', function(){
+				// change all add buttons to edit+remove
+				$('div.refillItem button.add').replaceWith('<button class="edit">Edit</button><button class="remove">Remove</button>');
+				refillAddSection();
+			});
+			
+			$('#refillsection').on('click', 'button.remove', function(){
+				// change all add buttons to edit+remove
+				$(this).parent().remove();
+			});
+			
+			$('.doRefill').on('click', function(){
+				// get item data from input boxes
+				var itemData = {};
+				$('#refillsection .refillItem').each(function(idx, val){
+					var item = $(val).find('input.item').val();
+					var amount = $(val).find('input.amount').val();
+					itemData[item] = parseInt(amount);
+				});
+				
+				//console.log(itemData);
+				refill(itemData);
+			})
+			
+			refillAddSection();
 		}
 		
 		Init();
@@ -707,6 +738,21 @@
 				socket.emit('send to client', packet);
 			}
 		}
+		
+		function refill(items){
+			var data = {accountId: gAccountId, items: items};
+			socket.emit('refill', data);
+		}
+		
+		function refillAddSection(){
+			var $refillSection = $('#refillsection');
+			
+			var html = '<div class="refillItem"><input class="item"></input><input class="amount"></input><button class="add">Add</button></div>';
+			var added = $refillSection.append(html);
+			console.log(added);
+		}
+		
+		
 
 		
 	  

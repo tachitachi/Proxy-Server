@@ -1272,7 +1272,7 @@ var RECV = {
 		],
 	},
 	0x00f8: {
-		name: 'unknown_packet_00f8', 
+		name: 'storage_closed', 
 		length: 2, 
 		log: 2,
 		data: [
