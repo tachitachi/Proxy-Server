@@ -18,7 +18,7 @@
 #logsection{
 	border: 1px solid black;
 	height: 600px;
-	width: 700px;
+	width: 1200px;
 	margin-top: 5px;
 	overflow: scroll;
 	font-family: "Lucida Console", Monospace, serif;
@@ -140,10 +140,6 @@
 			<option value="1721">Dragon Egg</option>
 		</select>
 		
-		<div id="accountInfoSection">
-		
-		</div>
-		
 		<div id="logsection">
 		
 		
@@ -172,7 +168,9 @@
 		
 		var prevLog = null;
 		socket.on('log recv', function(msg){
-			$logsection.append(msg);
+			var $logsection = $('#logsection');
+			var html = '<div class="logline">{0}</div>'.format(msg.message);
+			$logsection.append(html);
 			
 			console.log(msg);
 			

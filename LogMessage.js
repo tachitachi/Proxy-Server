@@ -19,6 +19,17 @@ var LOGMESSAGE = {
 			{name: 'data', size: -1, type: 'byte', log: 1},
 		],
 	},
+	0x0003: {
+		name: 'write packet to log', 
+		length: -1, 
+		log: 2,
+		data: [
+			{name: 'len', size: 2, type: 'int', log: 1},
+			{name: 'time', size: 4, type: 'int', log: 1},
+			{name: 'frac', size: 2, type: 'int', log: 1},
+			{name: 'data', size: -1, type: 'byte', log: 1},
+		],
+	},
 }
 
 for(var i in LOGMESSAGE){

@@ -2,7 +2,9 @@ var util = require('util');
 var net = require('net');
 var _ = require('underscore');
 var fs = require('fs');
-var path = require('path');;
+var path = require('path');
+
+var mkdirp = require('mkdirp');
 
 var express = require('express');
 var app = express();
@@ -38,6 +40,10 @@ app.get('/', function(req, res){
 	res.sendFile(path.join(__dirname+'/log.html'));
 });
 
+function SendToWeb(name, msg){
+	io.emit(name, msg);
+}
+
 http.listen(3001, function(){
   console.log('listening on *:3000');
 });
@@ -47,6 +53,22 @@ var PACKET_LOG_BUFFER = new PacketBuffer(LOGMESSAGE, 1);
 
 var RECV_BUFFER = {};
 var SEND_BUFFER = {};
+
+
+// TODO: Move some of these to constants?
+var sessionTime = GetTime().timestamp;
+var recvLogPath = path.join('logs', 'recv');
+var sendLogPath = path.join('logs', 'send');
+
+mkdirp(recvLogPath, function (err) {
+    if (err) console.error(err)
+    else console.log('dir created')
+});
+
+mkdirp(sendLogPath, function (err) {
+    if (err) console.error(err)
+    else console.log('dir created')
+});
 
 function ParsePackets(buffer, bytes){
 	//var bytes = msg.trim().split(' ');
@@ -66,17 +88,29 @@ function ParsePackets(buffer, bytes){
 function HandleLog(packet){
 	var packetBuffer = null;
 	var packetDef = null;
+	var outPath = null;
+	var webMessage = null;
 	
 	// Get recv/send, and ID
 	var ID = packet.data[LOGMESSAGE[packet.header].datamap.ID.index].value;
 	
-	if(packet.header === 0x0001){
+	switch(packet.header){
+	case 0x0001:
 		packetBuffer = RECV_BUFFER;
 		packetDef = RECV;
-	}
-	else if(packet.header === 0x0002){
+		outPath = path.join('logs', 'recv');
+		webMessage = 'log recv';
+		break;
+	case 0x0002:
 		packetBuffer = SEND_BUFFER;
 		packetDef = SEND;
+		outPath = path.join('logs', 'send');
+		webMessage = 'log send';
+		break;
+	default:
+		// Unknown packet header
+		Console.log('Unknown packet header', packet.header);
+		return;
 	}
 	
 	if (packetBuffer === null){
@@ -97,14 +131,23 @@ function HandleLog(packet){
 		// write binary to one file, and text to another
 		// separate each session's log somehow
 		
-		fs.appendFile(path.join('logs', ID + '.log'), parsedPackets[p].bytes, 'binary', function(err) {
+		var curTime = (new Date()).getTime();
+		var timestamp = Math.floor(curTime / 1000);
+		var fracTime = curTime % 1000;
+		
+		var loggedPacketLength = parsedPackets[p].length + 2;
+		var logPacket = CreateLogPacketBuffer(0x0003, {len: loggedPacketLength, time: timestamp, frac: fracTime, data: parsedPackets[p].bytes}, loggedPacketLength);
+		
+		// Write log to disk
+		fs.appendFile(path.join(outPath, ID + '_' + sessionTime + '.log'), logPacket, 'binary', function(err) {
 			if(err) {
 				console.log(err);
 			}
-
-			//console.log(parsedPackets[p].data);
-			console.log(parsedPackets[p].bytes);
 		}); 
+		
+		
+		// make log human readable
+		SendToWeb(webMessage, {message: parsedPackets[p].toHTML()});
 	}
 }
 
