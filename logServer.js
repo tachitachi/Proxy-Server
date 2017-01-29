@@ -88,8 +88,8 @@ function ParsePackets(buffer, bytes){
 function HandleLog(packet){
 	var packetBuffer = null;
 	var packetDef = null;
-	var outPath = null;
 	var webMessage = null;
+	var logHeader = null;
 	
 	// Get recv/send, and ID
 	var ID = packet.data[LOGMESSAGE[packet.header].datamap.ID.index].value;
@@ -98,14 +98,14 @@ function HandleLog(packet){
 	case 0x0001:
 		packetBuffer = RECV_BUFFER;
 		packetDef = RECV;
-		outPath = path.join('logs', 'recv');
 		webMessage = 'log recv';
+		logHeader = 0x0003;
 		break;
 	case 0x0002:
 		packetBuffer = SEND_BUFFER;
 		packetDef = SEND;
-		outPath = path.join('logs', 'send');
 		webMessage = 'log send';
+		logHeader = 0x0004;
 		break;
 	default:
 		// Unknown packet header
@@ -135,14 +135,15 @@ function HandleLog(packet){
 		var timestamp = Math.floor(curTime / 1000);
 		var fracTime = curTime % 1000;
 		
-		var loggedPacketLength = parsedPackets[p].length + 2;
-		var logPacket = CreateLogPacketBuffer(0x0003, {len: loggedPacketLength, time: timestamp, frac: fracTime, data: parsedPackets[p].bytes}, loggedPacketLength);
+		var loggedPacketLength = parsedPackets[p].length + 10;
+		var logPacket = CreateLogPacketBuffer(logHeader, {len: loggedPacketLength, time: timestamp, frac: fracTime, data: parsedPackets[p].bytes}, loggedPacketLength);
 		
 		// Write log to disk
-		fs.appendFile(path.join(outPath, ID + '_' + sessionTime + '.log'), logPacket, 'binary', function(err) {
+		fs.appendFile(path.join('logs', ID + '_' + sessionTime + '.log'), logPacket, 'binary', function(err) {
 			if(err) {
 				console.log(err);
 			}
+				//console.log(logPacket);
 		}); 
 		
 		

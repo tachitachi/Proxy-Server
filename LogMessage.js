@@ -20,7 +20,18 @@ var LOGMESSAGE = {
 		],
 	},
 	0x0003: {
-		name: 'write packet to log', 
+		name: 'log recv packet', 
+		length: -1, 
+		log: 2,
+		data: [
+			{name: 'len', size: 2, type: 'int', log: 1},
+			{name: 'time', size: 4, type: 'int', log: 1},
+			{name: 'frac', size: 2, type: 'int', log: 1},
+			{name: 'data', size: -1, type: 'byte', log: 1},
+		],
+	},
+	0x0004: {
+		name: 'log send packet', 
 		length: -1, 
 		log: 2,
 		data: [
