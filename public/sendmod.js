@@ -17,6 +17,16 @@ var SENDMOD = {
 //		],
 //	},
 
+//	0x0366: [
+//		{
+//			filter: {skillId: 47}, // Arrow shower -> Land Mine
+//			useAccount: {field: null, useMine: null}, // make sure this field is my own account
+//			response: [
+//				{cheat: true, type: RES_MODIFY, data: {skillId: 117}}, // don't display the hallucination effect
+//			],
+//		}
+//	]
+
 	
 	
 };

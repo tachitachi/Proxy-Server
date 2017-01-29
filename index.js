@@ -17,6 +17,7 @@ eval(fs.readFileSync('public/skills.js').toString());
 eval(fs.readFileSync('public/items.js').toString());
 
 eval(fs.readFileSync('public/recvmod.js').toString());
+eval(fs.readFileSync('public/sendmod.js').toString());
 eval(fs.readFileSync('public/refill.js').toString());
 eval(fs.readFileSync('public/monstermod.js').toString());
 eval(fs.readFileSync('public/rareitem.js').toString());
@@ -413,6 +414,184 @@ function HandleSend(packet, accountInfo, proxySocket, serviceSocket){
 		break;
 	default:
 		break;
+	}
+	
+	
+	
+	if(SENDMOD.hasOwnProperty(packet.header) && SEND.hasOwnProperty(packet.header)){
+		var modDefinitionList = SENDMOD[packet.header];
+		var packetDefinition = SEND[packet.header];
+		console.log(modDefinitionList);
+		
+		// check each filter
+		
+		for(var filterIndex = 0; filterIndex < modDefinitionList.length; filterIndex++){
+			var modDefinition = modDefinitionList[filterIndex];
+			// see if it matches the filter
+			
+			if(modDefinition.useAccount.field !== null){
+				var dataInfo = packetDefinition.datamap[modDefinition.useAccount.field];
+				var value = HexStringToInt(packet.bytes.slice(dataInfo.start, dataInfo.end));
+				if((value != accountInfo.accountId && modDefinition.useAccount.useMine) ||
+					(value == accountInfo.accountId && !modDefinition.useAccount.useMine)){
+					continue;
+				}
+			}
+			var noMatch = false;
+			
+			for(var key in modDefinition.filter){
+				console.log('im here 3');
+				// get start/end and read in
+				var dataInfo = packetDefinition.datamap[key];
+				// TODO: assume type INT for now
+				var value = HexStringToInt(packet.bytes.slice(dataInfo.start, dataInfo.end));
+				
+				var expected = modDefinition.filter[key];
+				if(typeof(expected) == 'function'){
+					// filter function must return bool
+					if(!expected(value)){
+						noMatch = true;
+						break;
+					}
+				}
+				else{
+					//console.log(value, expected);
+					if(value != expected){
+						noMatch = true;
+						break;
+					}
+				}
+			}
+			
+			if(noMatch){
+				continue;
+			}
+			
+			// else, do the response
+			//console.log('this matches, do response');
+			
+			// potentially multiple responses to a single packet
+			for(var responseIndex in modDefinition.response){
+				var response = modDefinition.response[responseIndex];
+				if(response.cheat && !bNodelayEnabled){
+					continue;
+				}
+				switch(response.type){
+				case RES_MODIFY:
+					// modify everything in data
+					for(var key in response.data){
+						var dataInfo = packetDefinition.datamap[key];
+						var length = dataInfo.end - dataInfo.start;
+						var value = response.data[key];
+						for(var i = 0; i < length; i++){
+							packet.bytes[dataInfo.start + i] = (value >> (i * 8)) & 0xff;
+						}
+					}
+					break;
+				case RES_DROP:
+					// do not write this packet
+					dropPacket = true;
+					//console.log('dropping packet ', bufPrint(packet.bytes));
+					break;
+				case RES_CLIENT:
+					// write this to client after a given delay
+					
+					var delay = 0;
+					if(response.delay !== undefined){
+						delay = response.delay;
+					}
+					
+					// Create a deep copy to not modify the original
+					var modifiedResponse = JSON.parse(JSON.stringify(response));
+					// TODO: finish adding the inField case
+					if(modifiedResponse.useMine !== undefined && modifiedResponse.outField !== undefined && modifiedResponse.useMine){
+						if(typeof(modifiedResponse.outField) === 'string'){
+							modifiedResponse.data[modifiedResponse.outField] = accountInfo.accountId;
+						}
+						else{
+							for(var i = 0; i < modifiedResponse.outField.length; i++){
+								var fieldName = modifiedResponse.outField[i];
+								modifiedResponse.data[fieldName] = accountInfo.accountId;
+							}
+						}
+					}
+					else if(modifiedResponse.useMine !== undefined && !modifiedResponse.useMine && modifiedResponse.inField !== undefined && modifiedResponse.inField !== undefined){
+						//var inFieldData = response.data[modifiedResponse.inField]
+						
+						var inFieldData = packet.data[RECV[packet.header].datamap[modifiedResponse.inField].index].value;
+						if(typeof(modifiedResponse.outField) === 'string'){
+							modifiedResponse.data[modifiedResponse.outField] = inFieldData;
+						}
+						else{
+							for(var i = 0; i < modifiedResponse.outField.length; i++){
+								var fieldName = modifiedResponse.outField[i];
+								modifiedResponse.data[fieldName] = inFieldData;
+							}
+						}
+					}
+					
+					var sendClientPacket = _.bind(function(){
+						var clientPacket = CreateRecvPacketBuffer(this.send, this.data);
+						proxySocket.write(clientPacket);
+					}, modifiedResponse);
+					
+					setTimeout(sendClientPacket, delay);
+				
+					break;
+				case RES_SERVER:
+					// write this to client after a given delay
+					//console.log('sending to server')
+					
+					var delay = 0;
+					if(response.delay !== undefined){
+						delay = response.delay;
+					}
+					
+					// Create a deep copy to not modify the original
+					var modifiedResponse = JSON.parse(JSON.stringify(response));
+					// TODO: finish adding the inField case
+					if(modifiedResponse.useMine !== undefined && modifiedResponse.outField !== undefined && modifiedResponse.useMine){
+						if(typeof(modifiedResponse.outField) === 'string'){
+							modifiedResponse.data[modifiedResponse.outField] = accountInfo.accountId;
+						}
+						else{
+							for(var i = 0; i < modifiedResponse.outField.length; i++){
+								var fieldName = modifiedResponse.outField[i];
+								modifiedResponse.data[fieldName] = accountInfo.accountId;
+							}
+						}
+					}
+					else if(modifiedResponse.useMine !== undefined && !modifiedResponse.useMine && modifiedResponse.inField !== undefined && modifiedResponse.inField !== undefined){
+						//var inFieldData = response.data[modifiedResponse.inField]
+						
+						var inFieldData = packet.data[RECV[packet.header].datamap[modifiedResponse.inField].index].value;
+						if(typeof(modifiedResponse.outField) === 'string'){
+							modifiedResponse.data[modifiedResponse.outField] = inFieldData;
+						}
+						else{
+							for(var i = 0; i < modifiedResponse.outField.length; i++){
+								var fieldName = modifiedResponse.outField[i];
+								modifiedResponse.data[fieldName] = inFieldData;
+							}
+						}
+					}
+					
+					var sendServerPacket = _.bind(function(){
+						var serverPacket = CreateSendPacketBuffer(this.send, this.data);
+						//console.log(serverPacket);
+						serviceSocket.write(serverPacket);
+					}, modifiedResponse);
+					
+					setTimeout(sendServerPacket, delay);
+				
+					break;
+				default:
+					break;
+				}
+			}
+			
+		}
+		
 	}
 	
 	
