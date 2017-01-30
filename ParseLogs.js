@@ -64,12 +64,16 @@ if(inlogfile !== null){
 			var packet = packets[i];
 			
 			var packetBlob = packet.data[LOGMESSAGE[packet.header].datamap.data.index].value;
+			var time = packet.data[LOGMESSAGE[packet.header].datamap.time.index].value;
+			var frac = packet.data[LOGMESSAGE[packet.header].datamap.frac.index].value;
+			var timestamp = time * 1000 + frac;
 			
 			switch(packet.header){
 			case 0x0003:
 			
 				var recvPackets = ParsePackets(RECV_BUFFER, packetBlob)
 				for(var packetIdx = 0; packetIdx < recvPackets.length; packetIdx++){
+					recvPackets[packetIdx].SetTime(timestamp);
 					var packetText = '[recv] ' + recvPackets[packetIdx].toString() + '\n';
 					logText += packetText;
 				}
@@ -80,6 +84,7 @@ if(inlogfile !== null){
 				
 				var sendPackets = ParsePackets(SEND_BUFFER, packetBlob)
 				for(var packetIdx = 0; packetIdx < sendPackets.length; packetIdx++){
+					sendPackets[packetIdx].SetTime(timestamp);
 					var packetText = '[send] ' + sendPackets[packetIdx].toString() + '\n';
 					logText += packetText;
 				}

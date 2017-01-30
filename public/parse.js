@@ -131,9 +131,7 @@ function Packet(definition, bytes){
 	this.bytes = bytes;
 	this.log = 3;
 	
-	var time = GetTime();
-	this.timestamp = time.timestamp;
-	this.timestring = time.string;
+	this.SetTime();
 	
 	this.header = GetHeaderId(bytes);
 	
@@ -240,6 +238,12 @@ function Packet(definition, bytes){
 	}
 	
 	//console.log(this.name, this.length);
+}
+
+Packet.prototype.SetTime = function(inputTime){
+	var time = GetTime(inputTime);
+	this.timestamp = time.timestamp;
+	this.timestring = time.string;
 }
 
 
@@ -411,8 +415,15 @@ function ParseRecv(bytes){
 	return out;
 }
 
-function GetTime(){
-	var curtime = new Date();
+function GetTime(inputTime){
+	var curtime;
+	
+	if(inputTime === undefined){
+		curtime = new Date();
+	}
+	else{
+		curtime = new Date(inputTime);
+	}
 	var month = padDigits(curtime.getMonth() + 1, 2); //zero index
 	var day = padDigits(curtime.getDate(), 2);
 	var year = curtime.getYear() + 1900;
