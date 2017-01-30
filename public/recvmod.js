@@ -378,6 +378,16 @@ var RECVMOD = {
 //		},
 	],
 	
+	0x09dc: [
+		{
+			filter: {lv: function(x){ return x == 99 || x == 150 || x == 160 || x == 175;}}, // Remove 175 Aura
+			useAccount: {field: null, useMine: false}, // make sure this field is my own account
+			response: [
+				{cheat: false, type: RES_MODIFY, data: {lv: 1}},
+			],
+		},
+	],
+	
 	0x09dd: [
 		{
 			filter: {lv: function(x){ return x == 99 || x == 150 || x == 160 || x == 175;}}, // Remove 175 Aura

@@ -10,7 +10,6 @@ var express = require('express');
 var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
-var path = require('path');
 
 eval(fs.readFileSync('public/parse.js').toString());
 eval(fs.readFileSync('public/recv.js').toString());
@@ -70,20 +69,7 @@ mkdirp(sendLogPath, function (err) {
     else console.log('dir created')
 });
 
-function ParsePackets(buffer, bytes){
-	//var bytes = msg.trim().split(' ');
-	buffer.Add(bytes);
-	var out = [];
-	
-	var packet = buffer.GetNextPacket();
-	while(packet !== null){
-		//console.log(packet.toString());
-		out.push(packet);
-		packet = buffer.GetNextPacket();
-	}
-	
-	return out;
-} 
+
 
 function HandleLog(packet){
 	var packetBuffer = null;

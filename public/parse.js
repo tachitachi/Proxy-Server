@@ -367,6 +367,21 @@ Packet.prototype.toHTML = function(loglevel){
 	return out;
 }
 
+function ParsePackets(buffer, bytes){
+	//var bytes = msg.trim().split(' ');
+	buffer.Add(bytes);
+	var out = [];
+	
+	var packet = buffer.GetNextPacket();
+	while(packet !== null){
+		//console.log(packet.toString());
+		out.push(packet);
+		packet = buffer.GetNextPacket();
+	}
+	
+	return out;
+} 
+
 function ParseRecv(bytes){
 	//var bytes = msg.trim().split(' ');
 	PACKET_BUFFER.Add(bytes);
