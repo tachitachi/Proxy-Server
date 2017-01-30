@@ -1,4 +1,12 @@
 var SEND = {
+	0x007d: {
+		name: 'map_loaded', 
+		length: 2, 
+		log: 2,
+		data: [
+		
+		],
+	},
 	0x0089: {
 		name: 'actor_action', 
 		length: 7, 
@@ -24,6 +32,14 @@ var SEND = {
 		data: [
 			{name: 'index', size: 2, type: 'int', log: 2},
 			{name: 'targetId', size: 4, type: 'int', log: 2},
+		],
+	},
+	0x00b2: {
+		name: 'restart', 
+		length: 3, 
+		log: 2,
+		data: [
+			{name: 'type', size: 1, type: 'int', log: 2},
 		],
 	},
 	0x00b9: {
@@ -52,6 +68,22 @@ var SEND = {
 			{name: 'targetId', size: 4, type: 'int', log: 2},
 		],
 	},
+	0x0118: {
+		name: 'stop_attack', 
+		length: 2, 
+		log: 2,
+		data: [
+		
+		],
+	},
+	0x0130: {
+		name: 'vending_list_request', 
+		length: 6, 
+		log: 2,
+		data: [
+			{name: 'ID', size: 4, type: 'int', log: 2},
+		],
+	},
 	0x0146: {
 		name: 'npc_talk_close', 
 		length: 6, 
@@ -68,6 +100,22 @@ var SEND = {
 			{name: 'ID', size: 4, type: 'int', log: 2},
 			{name: 'type', size: 1, type: 'int', log: 2},
 			{name: 'time', size: 2, type: 'int', log: 2},
+		],
+	},
+	0x014d: {
+		name: 'guild_check', 
+		length: 2, 
+		log: 2,
+		data: [
+		
+		],
+	},
+	0x014f: {
+		name: 'guild_info_request', 
+		length: 6, 
+		log: 2,
+		data: [
+			{name: 'ID', size: 4, type: 'int', log: 2},
 		],
 	},
 	0x01b2: {
@@ -94,6 +142,14 @@ var SEND = {
 		log: 2,
 		data: [
 			{name: 'coords', size: 3, type: 'coords', log: 2},
+		],
+	},
+	0x0360: {
+		name: 'sync', 
+		length: 6, 
+		log: 2,
+		data: [
+			{name: 'time', size: 4, type: 'int', log: 2},
 		],
 	},
 	0x0361: {
@@ -132,6 +188,22 @@ var SEND = {
 			{name: 'skillId', size: 2, type: 'int', log: 2},
 			{name: 'x', size: 2, type: 'int', log: 2},
 			{name: 'y', size: 2, type: 'int', log: 2},
+		],
+	},
+	0x0368: {
+		name: 'actor_info_request', 
+		length: 6, 
+		log: 2,
+		data: [
+			{name: 'ID', size: 4, type: 'int', log: 2},
+		],
+	},
+	0x08c9: {
+		name: 'request_cash_items', 
+		length: 2, 
+		log: 2,
+		data: [
+		
 		],
 	},
 };

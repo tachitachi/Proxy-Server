@@ -70,21 +70,20 @@ if(inlogfile !== null){
 			
 				var recvPackets = ParsePackets(RECV_BUFFER, packetBlob)
 				for(var packetIdx = 0; packetIdx < recvPackets.length; packetIdx++){
-					
-					var packetText = recvPackets[packetIdx].toHTML() + '\n';
+					var packetText = '[recv] ' + recvPackets[packetIdx].toString() + '\n';
 					logText += packetText;
-					
-					//fs.appendFileSync(outlogfile, packetText, 'utf-8', function(err) {
-					//	if(err) {
-					//		console.log(err);
-					//	}
-					//		//console.log(logPacket);
-					//}); 
-					
 				}
 			
 				break;
 			case 0x0004:
+			
+				
+				var sendPackets = ParsePackets(SEND_BUFFER, packetBlob)
+				for(var packetIdx = 0; packetIdx < sendPackets.length; packetIdx++){
+					var packetText = '[send] ' + sendPackets[packetIdx].toString() + '\n';
+					logText += packetText;
+				}
+			
 				break;
 			default:
 				break;

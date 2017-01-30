@@ -17,6 +17,16 @@ var RECVMOD = {
 //		],
 //	},
 
+//	0x0092: [
+//		{
+//			filter: {map: 'prontera.gat'}, // Identify unidentified items that exist
+//			useAccount: {field: null, useMine: false}, 
+//			response: [
+//				{cheat: true, type: RES_MODIFY, data: {map: 'payon.gat'}},
+//			],
+//		},
+//	],
+	
 	0x009d: [
 		{
 			filter: {identified: 0}, // Identify unidentified items that exist

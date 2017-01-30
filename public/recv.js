@@ -757,7 +757,7 @@ var RECV = {
 		],
 	},
 	0x00bd: {
-		name: 'stats_info', 
+		name: 'stat_info4', 
 		length: 44, 
 		log: 2,
 		data: [
@@ -1002,9 +1002,10 @@ var RECV = {
 		length: -1, 
 		log: 2,
 		data: [
-			{name: 'ownerId', size: 4, type: 'int', log: 2},
+			{name: 'len', size: 2, type: 'int', log: 2},
 			{name: 'ID', size: 4, type: 'int', log: 2},
-			{name: 'limit', size: 4, type: 'int', log: 2},
+			{name: 'chatId', size: 4, type: 'int', log: 2},
+			{name: 'limit', size: 2, type: 'int', log: 2},
 			{name: 'num_users', size: 2, type: 'int', log: 2},
 			{name: 'public', size: 1, type: 'int', log: 2},
 			{name: 'title', size: -1, type: 'string', log: 2},
@@ -8205,7 +8206,7 @@ var RECV = {
 			{name: 'opt3', size: 4, type: 'int', log: 0},
 			{name: 'stance', size: 1, type: 'int', log: 0},
 			{name: 'sex', size: 1, type: 'int', log: 0},
-			{name: 'coords', size: 3, type: 'byte', log: 1},
+			{name: 'coords', size: 3, type: 'coords', log: 1},
 			{name: 'xSize', size: 1, type: 'int', log: 0},
 			{name: 'ySize', size: 1, type: 'int', log: 0},
 			{name: 'lv', size: 2, type: 'int', log: 2},
@@ -8276,7 +8277,7 @@ var RECV = {
 			{name: 'opt3', size: 4, type: 'int', log: 1},
 			{name: 'stance', size: 1, type: 'int', log: 0},
 			{name: 'sex', size: 1, type: 'int', log: 0},
-			{name: 'coords', size: 6, type: 'byte', log: 1},
+			{name: 'coords', size: 6, type: 'coordpair', log: 1},
 			{name: 'xSize', size: 1, type: 'int', log: 0},
 			{name: 'ySize', size: 1, type: 'int', log: 0},
 			{name: 'lv', size: 2, type: 'int', log: 2},
@@ -8314,7 +8315,7 @@ var RECV = {
 			{name: 'opt3', size: 4, type: 'int', log: 0},
 			{name: 'stance', size: 1, type: 'int', log: 0},
 			{name: 'sex', size: 1, type: 'int', log: 0},
-			{name: 'coords', size: 3, type: 'byte', log: 1},
+			{name: 'coords', size: 3, type: 'coords', log: 1},
 			{name: 'xSize', size: 1, type: 'int', log: 0},
 			{name: 'ySize', size: 1, type: 'int', log: 0},
 			{name: 'act', size: 1, type: 'int', log: 2},
@@ -9355,7 +9356,7 @@ var RECV = {
 			{name: 'opt3', size: 4, type: 'int', log: 1},
 			{name: 'stance', size: 1, type: 'int', log: 0},
 			{name: 'sex', size: 1, type: 'int', log: 0},
-			{name: 'coords', size: 6, type: 'byte', log: 1},
+			{name: 'coords', size: 6, type: 'coordpair', log: 1},
 			{name: 'xSize', size: 1, type: 'int', log: 0},
 			{name: 'ySize', size: 1, type: 'int', log: 0},
 			{name: 'lv', size: 2, type: 'int', log: 2},
@@ -9394,7 +9395,7 @@ var RECV = {
 			{name: 'opt3', size: 4, type: 'int', log: 0},
 			{name: 'stance', size: 1, type: 'int', log: 0},
 			{name: 'sex', size: 1, type: 'int', log: 0},
-			{name: 'coords', size: 3, type: 'byte', log: 1},
+			{name: 'coords', size: 3, type: 'coords', log: 1},
 			{name: 'xSize', size: 1, type: 'int', log: 0},
 			{name: 'ySize', size: 1, type: 'int', log: 0},
 			{name: 'lv', size: 2, type: 'int', log: 2},
@@ -9433,7 +9434,7 @@ var RECV = {
 			{name: 'opt3', size: 4, type: 'int', log: 0},
 			{name: 'stance', size: 1, type: 'int', log: 0},
 			{name: 'sex', size: 1, type: 'int', log: 0},
-			{name: 'coords', size: 3, type: 'byte', log: 1},
+			{name: 'coords', size: 3, type: 'coords', log: 1},
 			{name: 'xSize', size: 1, type: 'int', log: 0},
 			{name: 'ySize', size: 1, type: 'int', log: 0},
 			{name: 'act', size: 1, type: 'int', log: 2},
@@ -9590,6 +9591,17 @@ var RECV = {
 					]
 				}
 			}, //(index itemId type amount wear_state card1 card2 card3 card4 expiration flags)(v v C v a4 v4 V C)
+		],
+	},
+	0x0a3b: {
+		name: 'misc_effect', 
+		length: -1, 
+		log: 2,
+		data: [
+			{name: 'len', size: 2, type: 'int', log: 2},
+			{name: 'ID', size: 4, type: 'int', log: 2},
+			{name: 'flag', size: 1, type: 'int', log: 2},
+			{name: 'effect', size: -1, type: 'byte', log: 2},
 		],
 	},
 };
