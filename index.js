@@ -17,12 +17,17 @@ eval(fs.readFileSync('public/skills.js').toString());
 eval(fs.readFileSync('public/items.js').toString());
 
 eval(fs.readFileSync('public/recvmod.js').toString());
+eval(fs.readFileSync('public/sendmod.js').toString());
 eval(fs.readFileSync('public/refill.js').toString());
 eval(fs.readFileSync('public/monstermod.js').toString());
 eval(fs.readFileSync('public/rareitem.js').toString());
 
-eval(fs.readFileSync('player.js').toString());
+//eval(fs.readFileSync('player.js').toString());
 eval(fs.readFileSync('bufutil.js').toString());
+
+
+// TODO: Need better name than itemutil
+eval(fs.readFileSync('itemutil.js').toString());
 eval(fs.readFileSync('constants.js').toString());
 
 eval(fs.readFileSync('LogMessage.js').toString());
@@ -256,6 +261,58 @@ io.on('connection', function(socket){
 		RECVMOD[data.header][data.pos].response[0].data[data.field] = data.value;
 	});
 	
+	socket.on('refill', function(data){
+		// data = {
+		//	accountId: ID,
+		// 	items: [
+		// 		{
+		// 			ID: X,
+		// 			amount: Y
+		// 		}
+		// 	]
+		// }
+		
+		console.log(data);
+		
+		var accountId = data.accountId;
+		if(!connectedAccounts.hasOwnProperty(accountId)){
+			console.log('no connected account');
+			return;
+		}
+		if(!connectionByAccount.hasOwnProperty(accountId)){
+			console.log('no server connection');
+			return;
+		}
+		
+		var accountInfo = connectedAccounts[accountId];
+		var serviceSocket = connectionByAccount[accountId].server;
+		
+		
+		
+		var refillData = data.items;
+		
+		var storagePackets = storageRefill(refillData, accountInfo);
+		console.log(storagePackets);
+		
+		if(storagePackets.length > 0){
+			var SendPackets = function(arr, accountInfo, serviceSocket){
+				if (!accountInfo.isStorageOpen){
+					return;
+				}
+				if(arr.length > 0){
+					var packet = arr.pop();
+					serviceSocket.write(packet);
+					//console.log(bufPrint(packet));
+					setTimeout(SendPackets, 500, arr, accountInfo, serviceSocket);
+				}
+			}
+			setTimeout(SendPackets, 500, storagePackets, accountInfo, serviceSocket);
+		}
+		
+		
+		
+	});
+	
   
 });
 
@@ -282,6 +339,10 @@ var mayaPurplePacket = new Buffer([0x3f, 0x04, 0xb8, 0x00, 0xf4, 0x3f, 0x1c, 0x0
 function HandleSend(packet, accountInfo, proxySocket, serviceSocket){
 	
 	switch(packet.header){
+	case 0x0149:
+		// Block all mute packets
+		console.log('bypassing mute');
+		return false;
 	case 0x00bf:
 		// emote
 		var emoteId = packet.data[SEND[packet.header].datamap.emoteId.index].value;
@@ -353,6 +414,184 @@ function HandleSend(packet, accountInfo, proxySocket, serviceSocket){
 		break;
 	default:
 		break;
+	}
+	
+	
+	
+	if(SENDMOD.hasOwnProperty(packet.header) && SEND.hasOwnProperty(packet.header)){
+		var modDefinitionList = SENDMOD[packet.header];
+		var packetDefinition = SEND[packet.header];
+		console.log(modDefinitionList);
+		
+		// check each filter
+		
+		for(var filterIndex = 0; filterIndex < modDefinitionList.length; filterIndex++){
+			var modDefinition = modDefinitionList[filterIndex];
+			// see if it matches the filter
+			
+			if(modDefinition.useAccount.field !== null){
+				var dataInfo = packetDefinition.datamap[modDefinition.useAccount.field];
+				var value = HexStringToInt(packet.bytes.slice(dataInfo.start, dataInfo.end));
+				if((value != accountInfo.accountId && modDefinition.useAccount.useMine) ||
+					(value == accountInfo.accountId && !modDefinition.useAccount.useMine)){
+					continue;
+				}
+			}
+			var noMatch = false;
+			
+			for(var key in modDefinition.filter){
+				console.log('im here 3');
+				// get start/end and read in
+				var dataInfo = packetDefinition.datamap[key];
+				// TODO: assume type INT for now
+				var value = HexStringToInt(packet.bytes.slice(dataInfo.start, dataInfo.end));
+				
+				var expected = modDefinition.filter[key];
+				if(typeof(expected) == 'function'){
+					// filter function must return bool
+					if(!expected(value)){
+						noMatch = true;
+						break;
+					}
+				}
+				else{
+					//console.log(value, expected);
+					if(value != expected){
+						noMatch = true;
+						break;
+					}
+				}
+			}
+			
+			if(noMatch){
+				continue;
+			}
+			
+			// else, do the response
+			//console.log('this matches, do response');
+			
+			// potentially multiple responses to a single packet
+			for(var responseIndex in modDefinition.response){
+				var response = modDefinition.response[responseIndex];
+				if(response.cheat && !bNodelayEnabled){
+					continue;
+				}
+				switch(response.type){
+				case RES_MODIFY:
+					// modify everything in data
+					for(var key in response.data){
+						var dataInfo = packetDefinition.datamap[key];
+						var length = dataInfo.end - dataInfo.start;
+						var value = response.data[key];
+						for(var i = 0; i < length; i++){
+							packet.bytes[dataInfo.start + i] = (value >> (i * 8)) & 0xff;
+						}
+					}
+					break;
+				case RES_DROP:
+					// do not write this packet
+					dropPacket = true;
+					//console.log('dropping packet ', bufPrint(packet.bytes));
+					break;
+				case RES_CLIENT:
+					// write this to client after a given delay
+					
+					var delay = 0;
+					if(response.delay !== undefined){
+						delay = response.delay;
+					}
+					
+					// Create a deep copy to not modify the original
+					var modifiedResponse = JSON.parse(JSON.stringify(response));
+					// TODO: finish adding the inField case
+					if(modifiedResponse.useMine !== undefined && modifiedResponse.outField !== undefined && modifiedResponse.useMine){
+						if(typeof(modifiedResponse.outField) === 'string'){
+							modifiedResponse.data[modifiedResponse.outField] = accountInfo.accountId;
+						}
+						else{
+							for(var i = 0; i < modifiedResponse.outField.length; i++){
+								var fieldName = modifiedResponse.outField[i];
+								modifiedResponse.data[fieldName] = accountInfo.accountId;
+							}
+						}
+					}
+					else if(modifiedResponse.useMine !== undefined && !modifiedResponse.useMine && modifiedResponse.inField !== undefined && modifiedResponse.inField !== undefined){
+						//var inFieldData = response.data[modifiedResponse.inField]
+						
+						var inFieldData = packet.data[RECV[packet.header].datamap[modifiedResponse.inField].index].value;
+						if(typeof(modifiedResponse.outField) === 'string'){
+							modifiedResponse.data[modifiedResponse.outField] = inFieldData;
+						}
+						else{
+							for(var i = 0; i < modifiedResponse.outField.length; i++){
+								var fieldName = modifiedResponse.outField[i];
+								modifiedResponse.data[fieldName] = inFieldData;
+							}
+						}
+					}
+					
+					var sendClientPacket = _.bind(function(){
+						var clientPacket = CreateRecvPacketBuffer(this.send, this.data);
+						proxySocket.write(clientPacket);
+					}, modifiedResponse);
+					
+					setTimeout(sendClientPacket, delay);
+				
+					break;
+				case RES_SERVER:
+					// write this to client after a given delay
+					//console.log('sending to server')
+					
+					var delay = 0;
+					if(response.delay !== undefined){
+						delay = response.delay;
+					}
+					
+					// Create a deep copy to not modify the original
+					var modifiedResponse = JSON.parse(JSON.stringify(response));
+					// TODO: finish adding the inField case
+					if(modifiedResponse.useMine !== undefined && modifiedResponse.outField !== undefined && modifiedResponse.useMine){
+						if(typeof(modifiedResponse.outField) === 'string'){
+							modifiedResponse.data[modifiedResponse.outField] = accountInfo.accountId;
+						}
+						else{
+							for(var i = 0; i < modifiedResponse.outField.length; i++){
+								var fieldName = modifiedResponse.outField[i];
+								modifiedResponse.data[fieldName] = accountInfo.accountId;
+							}
+						}
+					}
+					else if(modifiedResponse.useMine !== undefined && !modifiedResponse.useMine && modifiedResponse.inField !== undefined && modifiedResponse.inField !== undefined){
+						//var inFieldData = response.data[modifiedResponse.inField]
+						
+						var inFieldData = packet.data[RECV[packet.header].datamap[modifiedResponse.inField].index].value;
+						if(typeof(modifiedResponse.outField) === 'string'){
+							modifiedResponse.data[modifiedResponse.outField] = inFieldData;
+						}
+						else{
+							for(var i = 0; i < modifiedResponse.outField.length; i++){
+								var fieldName = modifiedResponse.outField[i];
+								modifiedResponse.data[fieldName] = inFieldData;
+							}
+						}
+					}
+					
+					var sendServerPacket = _.bind(function(){
+						var serverPacket = CreateSendPacketBuffer(this.send, this.data);
+						//console.log(serverPacket);
+						serviceSocket.write(serverPacket);
+					}, modifiedResponse);
+					
+					setTimeout(sendServerPacket, delay);
+				
+					break;
+				default:
+					break;
+				}
+			}
+			
+		}
+		
 	}
 	
 	
@@ -509,7 +748,10 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 			dropPacket = true;
 		}
 		break;
-		
+	
+	case 0x00f8:
+		accountInfo.isStorageOpen = false;
+		break;
 	case 0x01ff:
 	//case 0x0088:
 		//being_slide
@@ -834,6 +1076,8 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 		accountInfo.storage = {};
 		accountInfo.storageByIndex = {};
 		
+		accountInfo.isStorageOpen = true;
+		
 		var itemInfoList = packet.data[RECV[packet.header].datamap.itemInfo.index].value;
 		for(var i = 0; i < itemInfoList.length; i++){
 			var itemInfo = itemInfoList[i];
@@ -848,53 +1092,27 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 			accountInfo.storageByIndex[index] = itemId;
 		}
 		
-		var storagePackets = [];
+		//var storagePackets = [];
 		
 		// loop over every item in refill, and see what needs to happen
 		//console.log(accountInfo.name);
 		if(accountInfo.name !== null && refill.hasOwnProperty(accountInfo.name)){
 			var refillData = refill[accountInfo.name];
-			for(var itemId in refillData){
-				var inventoryData = {index: 0, amount: 0}; //accountInfo.inventory[itemId];
-				var storageData = {index: 0, amount: 0}; //accountInfo.storage[itemId];
-				
-				if(accountInfo.inventory.hasOwnProperty(itemId))
-					inventoryData = accountInfo.inventory[itemId];
-				if(accountInfo.storage.hasOwnProperty(itemId))
-					storageData = accountInfo.storage[itemId];
-				
-				var targetAmount = refillData[itemId];
-				
-				// put items back in storage
-				if(inventoryData.index && inventoryData.amount > 0 && inventoryData.amount > targetAmount){
-					var putBackAmount = inventoryData.amount - targetAmount;
-					if(putBackAmount > 0){
-						//console.log('[{0}] Too many of item [{1}] at [{2}], putting back {3}'.format(accountInfo.accountId, itemId, inventoryData.index, putBackAmount));
-						var storeItemPacket = CreateSendPacketBuffer(0x0364, {index: inventoryData.index, amount: putBackAmount});
-						storagePackets.push(storeItemPacket);
-					}
-				}
-				// extract items from storage
-				else if(storageData.index && storageData.amount > 0 && inventoryData.amount < targetAmount){
-					var pullOutAmount = Math.min(targetAmount - inventoryData.amount, storageData.amount - 1);
-					if(pullOutAmount > 0){
-						//console.log('[{0}] Not enough of item [{1}] at [{2}], pulling out {3}'.format(accountInfo.accountId, itemId, storageData.index, pullOutAmount));
-						var withdrawItemPacket = CreateSendPacketBuffer(0x0365, {index: storageData.index, amount: pullOutAmount});
-						storagePackets.push(withdrawItemPacket);
-					}
-				}
-			}
+			var storagePackets = storageRefill(refillData, accountInfo);
 			
 			if(storagePackets.length > 0){
-				var SendPackets = function(arr){
+				var SendPackets = function(arr, accountInfo){
+					if (!accountInfo.isStorageOpen){
+						return;
+					}
 					if(arr.length > 0){
 						var packet = arr.pop();
 						serviceSocket.write(packet);
 						//console.log(bufPrint(packet));
-						setTimeout(SendPackets, 500, arr);
+						setTimeout(SendPackets, 500, arr, accountInfo);
 					}
 				}
-				setTimeout(SendPackets, 500, storagePackets);
+				setTimeout(SendPackets, 500, storagePackets, accountInfo);
 			}
 		}
 		
@@ -1227,7 +1445,7 @@ function CreateRequest(host)
 						SendToWeb('log send', bufToList(packet.bytes));
 					}
 					
-					Log(packet.bytes);
+					Log(2, accountInfo.accountId, packet.bytes);
 					
 					//console.log(packet.bytes);
 					if(HandleSend(packet, accountInfo, proxySocket, serviceSocket)){
@@ -1273,7 +1491,7 @@ function CreateRequest(host)
 					SendToWeb('log recv', bufToList(packet.bytes));
 				}
 				
-				Log(packet.bytes);
+				Log(1, accountInfo.accountId, packet.bytes);
 				
 				if(HandleRecv(packet, accountInfo, proxySocket, serviceSocket)){
 					// add to packet blob
@@ -1370,9 +1588,25 @@ function LogRequest(host)
 }
 
 
-function Log(packet){
+function Log(type, ID, bytes){
 	if(LogServer !== null){
-		LogServer.write(packet);
+		var header;
+		if (type === 1){
+			header = 0x0001;
+		}
+		else if(type === 2){
+			header= 0x0002;
+		}
+		else{
+			// Unknown type?
+			return;
+		}
+		if (ID === undefined || ID === null){
+			ID = 0;
+		}
+		var bufferLength = 8 + bytes.length;
+		var logPacket = CreateLogPacketBuffer(header, {len: bufferLength, ID: ID, data: bytes}, bufferLength);
+		LogServer.write(logPacket);
 	}
 }
  

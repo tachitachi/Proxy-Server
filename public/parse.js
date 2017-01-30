@@ -218,12 +218,12 @@ function Packet(definition, bytes){
 					//console.log(value);
 				}
 				else{
-					value = this.bytes.slice(byteStart, byteEnd).join(' ');
+					value = this.bytes.slice(byteStart, byteEnd);
 				}
 				break;
 			case 'byte':
 			default:
-				value = this.bytes.slice(byteStart, byteEnd).join(' ');
+				value = this.bytes.slice(byteStart, byteEnd);
 				break;
 			
 			}
@@ -236,7 +236,7 @@ function Packet(definition, bytes){
 	else{
 		var packetHeaderString = IntToHexString(this.header, 2);
 		this.data.push({name: 'header', value: packetHeaderString, type: 'int', log: 2});
-		this.data.push({name: 'data', value: this.bytes.join(' '), type: 'byte', log: 1});
+		this.data.push({name: 'data', value: this.bytes, type: 'byte', log: 1});
 	}
 	
 	//console.log(this.name, this.length);
@@ -366,6 +366,21 @@ Packet.prototype.toHTML = function(loglevel){
 	//out = '{0} [{1}]'.format(out, this.bytes);
 	return out;
 }
+
+function ParsePackets(buffer, bytes){
+	//var bytes = msg.trim().split(' ');
+	buffer.Add(bytes);
+	var out = [];
+	
+	var packet = buffer.GetNextPacket();
+	while(packet !== null){
+		//console.log(packet.toString());
+		out.push(packet);
+		packet = buffer.GetNextPacket();
+	}
+	
+	return out;
+} 
 
 function ParseRecv(bytes){
 	//var bytes = msg.trim().split(' ');

@@ -145,6 +145,12 @@ function _CreatePacket(buf, definition, data){
 				buf[start + 1] = value[1];
 				buf[start + 2] = value[2];
 				break;
+			case 'byte':
+				// Go for fixed length, or until end of buffer
+				for(var i = 0; i < end - start || (start + i) < buf.length; i++){
+					buf[start + i] = value[i];
+				}
+				break;
 			default:
 				// non ints not supported yet
 				break;

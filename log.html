@@ -15,26 +15,18 @@
 	padding-left: 10px;
 }
 
-#refillsection{
+#logsection{
 	border: 1px solid black;
 	height: 600px;
-	width: 700px;
+	width: 1200px;
 	margin-top: 5px;
 	overflow: scroll;
 	font-family: "Lucida Console", Monospace, serif;
 	float: left;
 }
 
-.doRefill{
-	float: right;
-}
-
 .logline{
 	
-}
-
-.logline.send{
-	color: red;
 }
 
 #mapsection{
@@ -148,13 +140,8 @@
 			<option value="1721">Dragon Egg</option>
 		</select>
 		
-		<div id="accountInfoSection">
+		<div id="logsection">
 		
-		</div>
-		
-		<div id="refillsection">
-			<div>Refill</div>
-			<button class="doRefill">Do Refill</button>
 		
 		</div>
 		
@@ -177,143 +164,25 @@
 		var gAccountId = 0;
 		var gInfoTimer = null;
 		
-		PACKET_BUFFER = new PacketBuffer(RECV, 0);
-		
-		socket.on('chat message', function(msg){
-			console.log(msg);
-		});
-		
-		socket.on('current state', function(msg){
-			console.log('current state', msg);
-			bRecvLoggingEnabled = msg.recvLoggingEnabled;
-			bSendLoggingEnabled = msg.sendLoggingEnabled;
-			bNodelayEnabled = msg.nodelayEnabled;
-			
-			SetButtonText();
-		});
-		
-		socket.on('ChangeMap', function(data){
-			console.log('calling ChangeMap', data);
-			LoadMap(data.name);
-			ChangeLocation({x: data.x, y: data.y});
-		});
-		
-		socket.on('ChangeLocation', function(coords){
-			//console.log('calling ChangeLocation', coords);
-			var result = 'Good';
-			if(coords.x % 40 < 5 || coords.x % 40 > 35 || coords.y % 40 < 5 || coords.y % 40 > 35){
-				result = 'Bad';
-			}
-			//SelfChatRecv('{0} ({1},{2})'.format(result, coords.x, coords.y));
-			ChangeLocation(coords);
-		});
-		
-		socket.on('GetAccountInfo', function(message){
-			//console.log(data);
-			
-			var data = message.accountInfo;
-			var inspiration = message.inspirationInfo;
-			//console.log(inspiration);
-			console.log(data);
-			
-			var accountInfoString = '';
-			
-			var dataKeys = Object.keys(data).sort();
-			for(var keyIndex in dataKeys){
-				var key = dataKeys[keyIndex]
-				if(key === 'inventory'){
-					accountInfoString += '<div>{0}:'.format(key);
-					var inventoryKeys = Object.keys(data[key]).sort();
-					for(var itemIndex in inventoryKeys){
-						var item = inventoryKeys[itemIndex];
-						var itemName = DbTable_Items.hasOwnProperty(item) ? '{0} ({1})'.format(DbTable_Items[item], item) : 'Unknown Item {0}'.format(item);
-						accountInfoString += '<div class="tab-left">{0}: {1}</div>'.format(itemName, data[key][item].amount);
-					}
-					
-					accountInfoString += '</div>'.format(key);
-				}
-				else if(key === 'cart'){
-					accountInfoString += '<div>{0}:'.format(key);
-					var inventoryKeys = Object.keys(data[key]).sort();
-					for(var itemIndex in inventoryKeys){
-						var item = inventoryKeys[itemIndex];
-						var itemName = DbTable_Items.hasOwnProperty(item) ? '{0} ({1})'.format(DbTable_Items[item], item) : 'Unknown Item {0}'.format(item);
-						accountInfoString += '<div class="tab-left">{0}: {1}</div>'.format(itemName, data[key][item].amount);
-					}
-					
-					accountInfoString += '</div>'.format(key);
-				}
-				else{
-					accountInfoString += '<div>{0}: {1}</div>'.format(key, data[key]);
-				}
-			}
-			
-			$('#accountInfoSection').html(accountInfoString);
-		});
+		//PACKET_BUFFER = new PacketBuffer(RECV, 0);
 		
 		var prevLog = null;
 		socket.on('log recv', function(msg){
-			var loglines = ParseRecv(msg);
 			var $logsection = $('#logsection');
-			for(var i in loglines){
-				if(loglines[i].log >= 0){
-					//if(prevLog !== null){
-					//	var html = '<div class="logline">{0}</div>'.format(prevLog.toString(0));
-					//	$logsection.append(html);
-					//}
-					var html = '<div class="logline">{0}</div>'.format(loglines[i].toString(0));
-					$logsection.append(html);
-					console.log(DecimalToHex(loglines[i].bytes));
-				}
-				prevLog = loglines[i];
-			}
+			var html = '<div class="logline">{0}</div>'.format(msg.message);
+			$logsection.append(html);
+			
+			console.log(msg);
 			
 			$logsection.stop().animate({
 			  scrollTop: $logsection[0].scrollHeight
 			}, 800);
 		});
 		
-		
-		function ParsePackets(buffer, bytes){
-			//var bytes = msg.trim().split(' ');
-			buffer.Add(bytes);
-			var out = [];
-			
-			var packet = buffer.GetNextPacket();
-			while(packet !== null){
-				//console.log(packet.toString());
-				out.push(packet);
-				packet = buffer.GetNextPacket();
-			}
-			
-			return out;
-		}
-		
-		SEND_BUFFER = new PacketBuffer(SEND, 0);
-		
 		socket.on('log send', function(msg){
 			//console.log(msg);
 			console.log(DecimalToHex(msg));
-			
-			//var loglines = ParsePackets(SEND_BUFFER, msg);
-			//var $logsection = $('#logsection');
-			//for(var i in loglines){
-			//	if(loglines[i].log >= 0){
-			//		//if(prevLog !== null){
-			//		//	var html = '<div class="logline">{0}</div>'.format(prevLog.toString(0));
-			//		//	$logsection.append(html);
-			//		//}
-			//		var html = '<div class="logline send">{0}</div>'.format(loglines[i].toString(0));
-			//		$logsection.append(html);
-			//		console.log(DecimalToHex(loglines[i].bytes));
-			//	}
-			//	prevLog = loglines[i];
-			//}
-			//
-			//$logsection.stop().animate({
-			//  scrollTop: $logsection[0].scrollHeight
-			//}, 800);
-			
+			testmsg = msg;
 		});
 		
 		
@@ -607,73 +476,6 @@
 		}
 		
 		
-		function ChangeBigMagicJob(skillId){
-			var data = {header: 0x09ca, pos: 0, field: 'job', value: skillId};
-			socket.emit('modify mod', data);
-		}
-		
-		function ChangeMoveAura(auraValue){
-			var data = {header: 0x0914, pos: 1, field: 'opt3', value: auraValue};
-			socket.emit('modify mod', data);
-		}
-		
-		function ChangeDragonBreath(skillId){
-			var data = {header: 0x01de, pos: 1, field: 'skillId', value: skillId};
-			socket.emit('modify mod', data);
-		}
-		
-		function SpawnGods(startX, startY, endX, endY){
-			var actorId = 2281;
-			var gods = [2629, 2410, 2630, 1530];
-			
-			var godStrings = []
-			
-			for(var i = startX; i < endX; i++){
-				for(var j = startY; j < endY; j++){
-					
-					//console.log(i, j, actorId);
-					
-					var id = IntToHexString(actorId, 4);
-					var x = IntToHexString(i, 2);
-					var y = IntToHexString(j, 2);
-					
-					var item = IntToHexString(gods[Math.floor(Math.random() * 4)], 2);
-					
-					var subx = IntToHexString(Math.floor(Math.random() * 16), 1);
-					var suby = IntToHexString(Math.floor(Math.random() * 16), 1);
-					
-					//[9e 00] [id id id id] [actorId actorId] [identified] [x x] [y y] [subx] [suby] [amt amt]
-					var packet = '9e 00 ' + id + ' ' + item + ' 01 ' + x + ' ' + y + ' ' + subx + ' ' + suby + ' 01 00';
-					//console.log(packet);
-					godStrings.push(packet);
-					
-					actorId++;
-				}
-			}
-			
-			console.log(godStrings.join(' '));
-		
-		}
-		
-		function SpawnItem(itemId){
-			var id = IntToHexString(2281, 4);
-			var item = IntToHexString(itemId, 2);
-			var x = IntToHexString(xLocation, 2);
-			var y = IntToHexString(yLocation, 2);
-			var subx = IntToHexString(Math.floor(Math.random() * 16), 1);
-			var suby = IntToHexString(Math.floor(Math.random() * 16), 1);
-			var packet = '9e 00 ' + id + ' ' + item + ' 01 ' + x + ' ' + y + ' ' + subx + ' ' + suby + ' 01 00';
-			//console.log(packet);
-			socket.emit('send to client', packet);
-		}
-		
-		function ItemToInv(itemId, index){
-			var idx = IntToHexString(index, 2);
-			var item = IntToHexString(itemId, 2);
-			var packet = '0c 0a ' + idx + ' 01 00 ' + item + ' 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 02 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00'
-			socket.emit('send to client', packet);
-		}
-		
 		
 		function Init(){
 		
@@ -684,73 +486,9 @@
 			//gInfoTimer = setInterval(function(){
 			//	GetAccountInfo(gAccountId);
 			//}, 5000);
-			
-			$('#refillsection').on('click', 'button.add', function(){
-				// change all add buttons to edit+remove
-				$('div.refillItem button.add').replaceWith('<button class="edit">Edit</button><button class="remove">Remove</button>');
-				refillAddSection();
-			});
-			
-			$('#refillsection').on('click', 'button.remove', function(){
-				// change all add buttons to edit+remove
-				$(this).parent().remove();
-			});
-			
-			$('.doRefill').on('click', function(){
-				// get item data from input boxes
-				var itemData = {};
-				$('#refillsection .refillItem').each(function(idx, val){
-					var item = $(val).find('input.item').val();
-					var amount = $(val).find('input.amount').val();
-					itemData[item] = parseInt(amount);
-				});
-				
-				//console.log(itemData);
-				refill(itemData);
-			})
-			
-			refillAddSection();
 		}
 		
 		Init();
-		
-		
-		function SendAutoSkill(skillId){
-			//socket.emit('send to client', 'hello');
-			var packet = '1a 01 {0} 05 00 f4 3f 1c 00 f4 3f 1c 00 01'.format(IntToHexString(skillId, 2));
-			
-			
-			
-			if(packet != ''){				
-				//console.log($packet.val());
-				console.log(packet);
-				socket.emit('send to client', packet);
-			}
-		}
-		
-		function EndEffect(skillId){
-			//socket.emit('send to client', 'hello');
-			var packet = '96 01 {0} f3 3a 10 00 00'.format(IntToHexString(skillId, 2));
-			
-			if(packet != ''){				
-				//console.log($packet.val());
-				console.log(packet);
-				socket.emit('send to client', packet);
-			}
-		}
-		
-		function refill(items){
-			var data = {accountId: gAccountId, items: items};
-			socket.emit('refill', data);
-		}
-		
-		function refillAddSection(){
-			var $refillSection = $('#refillsection');
-			
-			var html = '<div class="refillItem"><input class="item"></input><input class="amount"></input><button class="add">Add</button></div>';
-			var added = $refillSection.append(html);
-			console.log(added);
-		}
 		
 		
 

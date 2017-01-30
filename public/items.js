@@ -4786,3 +4786,11 @@ var DbTable_Items = {	501:"Red Potion",
 	22059:"Egir Shoes [1]",
 	22067:"Witch Shoes",
 };
+
+var Sorted_Items = [];
+
+for(var id in DbTable_Items){
+	Sorted_Items.push([DbTable_Items[id], parseInt(id)]);
+}
+
+Sorted_Items.sort();
