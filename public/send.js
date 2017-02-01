@@ -25,6 +25,15 @@ var SEND = {
 			{name: 'message', size: -1, type: 'string', log: 2},
 		],
 	},
+	0x0090: {
+		name: 'npc_clicked', 
+		length: 7, 
+		log: 2,
+		data: [
+			{name: 'ID', size: 4, type: 'int', log: 2},
+			{name: 'type', size: 1, type: 'int', log: 2},
+		],
+	},
 	0x00a7: {
 		name: 'send_item_use', 
 		length: 8, 
@@ -42,6 +51,15 @@ var SEND = {
 			{name: 'type', size: 1, type: 'int', log: 2},
 		],
 	},
+	0x00b8: {
+		name: 'npc_talk_response', 
+		length: 7, 
+		log: 2,
+		data: [
+			{name: 'ID', size: 4, type: 'int', log: 2},
+			{name: 'response', size: 1, type: 'int', log: 2},
+		],
+	},
 	0x00b9: {
 		name: 'npc_talk_continue', 
 		length: 6, 
@@ -56,6 +74,14 @@ var SEND = {
 		log: 2,
 		data: [
 			{name: 'emoteId', size: 1, type: 'int', log: 2},
+		],
+	},
+	0x00f7: {
+		name: 'close_storage', 
+		length: 2, 
+		log: 2,
+		data: [
+		
 		],
 	},
 	0x0113: {
@@ -118,6 +144,30 @@ var SEND = {
 			{name: 'ID', size: 4, type: 'int', log: 2},
 		],
 	},
+	0x01a1: {
+		name: 'pet_menu_action', 
+		length: 3, 
+		log: 4,
+		data: [
+			{name: 'option', size: 1, type: 'int', log: 2},
+		],
+	},
+	0x01a7: {
+		name: 'select_egg', 
+		length: -1, 
+		log: 4,
+		data: [
+			{name: 'index', size: 2, type: 'int', log: 2},
+		],
+	},
+	0x01a9: {
+		name: 'pet_send_emotion', 
+		length: 6, 
+		log: 4,
+		data: [
+			{name: 'data', size: 4, type: 'byte', log: 2},
+		],
+	},
 	0x01b2: {
 		name: 'shop_open', 
 		length: -1, 
@@ -134,6 +184,14 @@ var SEND = {
 					]
 				}
 			},
+		],
+	},
+	0x02f1: {
+		name: 'progress_bar', 
+		length: 2, 
+		log: 2,
+		data: [
+		
 		],
 	},
 	0x035f: {
@@ -159,6 +217,14 @@ var SEND = {
 		data: [
 			{name: 'head', size: 2, type: 'int', log: 2},
 			{name: 'body', size: 1, type: 'int', log: 2},
+		],
+	},
+	0x0362: {
+		name: 'item_take', 
+		length: 6, 
+		log: 2,
+		data: [
+			{name: 'ID', size: 4, type: 'int', log: 2},
 		],
 	},
 	0x0364: {
@@ -204,6 +270,15 @@ var SEND = {
 		log: 2,
 		data: [
 		
+		],
+	},
+	0x0998: {
+		name: 'send_equip', 
+		length: 8, 
+		log: 2,
+		data: [
+			{name: 'index', size: 2, type: 'int', log: 2},
+			{name: 'type', size: 4, type: 'int', log: 2},
 		],
 	},
 };

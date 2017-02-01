@@ -262,15 +262,12 @@
 					//	$logsection.append(html);
 					//}
 					var html = '<div class="logline">{0}</div>'.format(loglines[i].toString(0));
-					$logsection.append(html);
+					//$logsection.append(html);
 					console.log(DecimalToHex(loglines[i].bytes));
 				}
 				prevLog = loglines[i];
 			}
 			
-			$logsection.stop().animate({
-			  scrollTop: $logsection[0].scrollHeight
-			}, 800);
 		});
 		
 		
@@ -731,6 +728,17 @@
 		function EndEffect(skillId){
 			//socket.emit('send to client', 'hello');
 			var packet = '96 01 {0} f3 3a 10 00 00'.format(IntToHexString(skillId, 2));
+			
+			if(packet != ''){				
+				//console.log($packet.val());
+				console.log(packet);
+				socket.emit('send to client', packet);
+			}
+		}
+		
+		function FakeUseItem(itemId){
+			
+			var packet = 'c8 01 ba 00 {0} f4 3f 1c 00 03 00 01'.format(IntToHexString(itemId, 2));
 			
 			if(packet != ''){				
 				//console.log($packet.val());

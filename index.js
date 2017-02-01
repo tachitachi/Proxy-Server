@@ -666,7 +666,15 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 			break;
 		case 5:
 			// current hp
+			var direction = val - accountInfo.currentHp;
+			
 			accountInfo.currentHp = val;
+			
+			if(direction < 0 && accountInfo.currentHp / accountInfo.maxHp <= 0.6){
+				var playLaughSound = CreateRecvPacketBuffer(0x01c8, {index: 200, itemId: 12027, ID: accountInfo.accountId, remaining: 0, success: 1});
+				proxySocket.write(playLaughSound);
+			}
+			
 			break;
 		case 6:
 			// max hp

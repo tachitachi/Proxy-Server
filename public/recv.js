@@ -9107,11 +9107,13 @@ var RECV = {
 		],
 	},
 	0x0977: {
-		name: 'unknown_packet_0977', 
+		name: 'monster_hp', 
 		length: 14, 
 		log: 2,
 		data: [
-			{name: 'data', size: 12, type: 'byte', log: 1},
+			{name: 'ID', size: 4, type: 'int', log: 1},
+			{name: 'hp', size: 4, type: 'int', log: 1},
+			{name: 'maxHp', size: 4, type: 'int', log: 1},
 		],
 	},
 	0x097a: {
