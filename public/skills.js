@@ -871,7 +871,7 @@ var DbTable_Skills = {
 	2259:"Flame Launcher",
 	2260:"Cold Slower",
 	2261:"Arm Cannon",
-	2262:"cceleration",
+	2262:"Acceleration",
 	2263:"Hover",
 	2264:"Front Slide",
 	2265:"Back Slide",

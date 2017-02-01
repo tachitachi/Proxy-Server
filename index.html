@@ -198,6 +198,11 @@
 			ChangeLocation({x: data.x, y: data.y});
 		});
 		
+		socket.on('sound', function(data){
+			var audio = new Audio('sfx/{0}'.format(data.name));
+			audio.play();
+		});
+		
 		socket.on('ChangeLocation', function(coords){
 			//console.log('calling ChangeLocation', coords);
 			var result = 'Good';

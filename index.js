@@ -68,6 +68,10 @@ function SendToWeb(name, msg){
 	io.emit(name, msg);
 }
 
+function PlaySfx(filename){
+	io.emit('sound', {name: filename});
+}
+
 function ChangeMap(mapdata){
 	io.emit('ChangeMap', mapdata);
 }
@@ -617,6 +621,16 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 		}
 		
 		break;
+	case 0x0080:
+		// actor_died_or_disappeared
+		var accountId = packet.data[RECV[packet.header].datamap.ID.index].value;
+		
+		if(accountId in inspirationTargets){
+			clearTimeout(inspirationTargets[accountId]);
+			delete inspirationTargets[accountId];
+		}
+	
+		break;
 	case 0x0087:
 		// Started walking
 		var ping = 50;
@@ -671,8 +685,9 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 			accountInfo.currentHp = val;
 			
 			if(direction < 0 && accountInfo.currentHp / accountInfo.maxHp <= 0.6){
-				var playLaughSound = CreateRecvPacketBuffer(0x01c8, {index: 200, itemId: 12027, ID: accountInfo.accountId, remaining: 0, success: 1});
-				proxySocket.write(playLaughSound);
+				//var playLaughSound = CreateRecvPacketBuffer(0x01c8, {index: 200, itemId: 12027, ID: accountInfo.accountId, remaining: 0, success: 1});
+				//proxySocket.write(playLaughSound);
+				PlaySfx('critical.ogg');
 			}
 			
 			break;
@@ -694,16 +709,27 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 		}
 		
 		break;
-//	case 0x07fb:
-//		// skill cast
-//		
-//		// if someone snaps off screen, fix "ghosting"
-//		var sourceId = packet.data[RECV[packet.header].datamap.sourceId.index].value;
-//		var x = packet.data[RECV[packet.header].datamap.x.index].value;
-//		var y = packet.data[RECV[packet.header].datamap.y.index].value;
-//		var skillId = packet.data[RECV[packet.header].datamap.skillId.index].value;
-//		var wait = packet.data[RECV[packet.header].datamap.wait.index].value;
-//		
+	case 0x07fb:
+		// skill cast
+		
+		// if someone snaps off screen, fix "ghosting"
+		var sourceId = packet.data[RECV[packet.header].datamap.sourceId.index].value;
+		var targetId = packet.data[RECV[packet.header].datamap.targetId.index].value;
+		var x = packet.data[RECV[packet.header].datamap.x.index].value;
+		var y = packet.data[RECV[packet.header].datamap.y.index].value;
+		var skillId = packet.data[RECV[packet.header].datamap.skillId.index].value;
+		var wait = packet.data[RECV[packet.header].datamap.wait.index].value;
+		
+		// If I cast masq on someone in inspiration
+		var Masqs = new Set([2292, 2293, 2294, 2295, 2296, 2297]);
+		if(accountInfo.accountId !== sourceId && Masqs.has(skillId)){
+			if (targetId in inspirationTargets){
+				PlaySfx('inspiration.ogg');
+			}
+		}
+		
+		
+		
 //		if(accountInfo.accountId !== sourceId && skillId === 264 /* Snap */){
 //			if(Math.abs(x - accountInfo.x) >= 15 || Math.abs(y - accountInfo.y) >= 15){
 //				// create the actor_died_or_disappeared packet
@@ -714,9 +740,9 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 //				//console.log('removing snapped target');
 //			}
 //		}
-//		
-//	
-//		break;
+		
+	
+		break;
 	case 0x00b3:
 		// switch character, reset stats
 			
@@ -843,29 +869,28 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 		var type = packet.data[RECV[packet.header].datamap.type.index].value;
 		var flag = packet.data[RECV[packet.header].datamap.flag.index].value;
 		
-		if(bNodelayEnabled){
-			if(accountId !== accountInfo.accountId){ // keep track of opponents
-				if(type === 407){
-					if(flag === 1){
-						//console.log('has inspiration!');
-						if(!inspirationTargets.hasOwnProperty(accountId)){
-							//console.log('starting inspiration timer');
-							// start a timer to disable inspiration, if I haven't started one for this account already	
-							
-							//console.log('adding to inspiration', accountId, accountInfo.accountId)
-							inspirationTargets[accountId] = new Date();
-							
-							setTimeout(_.bind(function(){
-								//console.log('deleting inspiration from timer');
-								delete inspirationTargets[this.accountId];
-							}, {accountId: accountId}), 1000);
-						}
-					}
-					else{
-						//clearTimeout(inspirationTargets[accountId]);
-						delete inspirationTargets[accountId];
-						//96 01 7b 00 f3 3a 10 00 00
+		if(accountId !== accountInfo.accountId){ // keep track of opponents
+			if(type === 407){
+				if(flag === 1){
+					//console.log('has inspiration!');
+					if(!inspirationTargets.hasOwnProperty(accountId)){
+						//console.log('starting inspiration timer');
+						// start a timer to disable inspiration, if I haven't started one for this account already	
 						
+						//console.log('adding to inspiration', accountId, accountInfo.accountId)
+						inspirationTargets[accountId] = setTimeout(_.bind(function(){
+							console.log('deleting inspiration from timer', this.accountId);
+							delete inspirationTargets[this.accountId];
+						}, {accountId: accountId}), 90000);
+					}
+				}
+				else{
+					
+					clearTimeout(inspirationTargets[accountId]);
+					delete inspirationTargets[accountId];
+					//96 01 7b 00 f3 3a 10 00 00
+					
+					if(bNodelayEnabled){
 						var endInspirationEffect = CreateRecvPacketBuffer(0x0196, {type: 123, ID: accountId, flag: 0});
 						proxySocket.write(endInspirationEffect);
 					}
@@ -912,7 +937,7 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 					packet.bytes[dataInfo.start + i] = (value >> (i * 8)) & 0xff;
 				}
 				
-				delete inspirationTargets[accountId];
+				//delete inspirationTargets[accountId];
 				//console.log('deleting inspiration', inspirationTargets);
 			}
 		}
