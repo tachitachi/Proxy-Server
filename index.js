@@ -21,6 +21,7 @@ eval(fs.readFileSync('public/sendmod.js').toString());
 eval(fs.readFileSync('public/refill.js').toString());
 eval(fs.readFileSync('public/monstermod.js').toString());
 eval(fs.readFileSync('public/rareitem.js').toString());
+eval(fs.readFileSync('public/sounds.js').toString());
 
 //eval(fs.readFileSync('player.js').toString());
 eval(fs.readFileSync('bufutil.js').toString());
@@ -70,6 +71,10 @@ function SendToWeb(name, msg){
 
 function PlaySfx(filename){
 	io.emit('sound', {name: filename});
+}
+
+function PlayVoice(msg){
+	io.emit('voice', {msg: msg});
 }
 
 function ChangeMap(mapdata){
@@ -687,7 +692,7 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 			if(direction < 0 && accountInfo.currentHp / accountInfo.maxHp <= 0.6){
 				//var playLaughSound = CreateRecvPacketBuffer(0x01c8, {index: 200, itemId: 12027, ID: accountInfo.accountId, remaining: 0, success: 1});
 				//proxySocket.write(playLaughSound);
-				PlaySfx('critical.ogg');
+				PlayVoice('critical');
 			}
 			
 			break;
@@ -722,9 +727,9 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 		
 		// If I cast masq on someone in inspiration
 		var Masqs = new Set([2292, 2293, 2294, 2295, 2296, 2297]);
-		if(accountInfo.accountId !== sourceId && Masqs.has(skillId)){
+		if(accountInfo.accountId == sourceId && Masqs.has(skillId)){
 			if (targetId in inspirationTargets){
-				PlaySfx('inspiration.ogg');
+				PlayVoice('inspiration');
 			}
 		}
 		
@@ -850,6 +855,7 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 		// use item
 		var itemId = packet.data[RECV[packet.header].datamap.itemId.index].value;
 		var itemIndex = packet.data[RECV[packet.header].datamap.index.index].value;
+		var remaining = packet.data[RECV[packet.header].datamap.remaining.index].value;
 		
 		if(accountInfo.inventory.hasOwnProperty(itemId)){
 			var itemInfo = accountInfo.inventory[itemId];
@@ -858,6 +864,9 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 			if(itemInfo.amount <= 0){
 				delete accountInfo.inventory[itemId];
 				delete accountInfo.inventoryByIndex[itemIndex];
+			}
+			else{
+				itemInfo.amount = remaining;
 			}
 		}
 		break;
@@ -1377,6 +1386,22 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 					
 					setTimeout(sendServerPacket, delay);
 				
+					break;
+					
+				case RES_SPEECH:
+					var delay = 0;
+					if(response.delay !== undefined){
+						delay = response.delay;
+					}
+					
+					var modifiedResponse = JSON.parse(JSON.stringify(response));
+					
+					var sendSpeechMsg = _.bind(function(){
+						PlayVoice(this.data.msg);
+					}, modifiedResponse);
+					
+					setTimeout(sendSpeechMsg, delay);
+					
 					break;
 				default:
 					break;

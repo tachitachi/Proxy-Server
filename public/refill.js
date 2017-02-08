@@ -51,6 +51,7 @@ var refill = {
 		//6210: 50, // Thorn Plant Seed
 		//11595: 3, // Trans Candy Green
 		1025: 100, // Cobweb
+		608: 10, // Yggdrasil Seed
 		
 	},
 	'Lord Bwing': {

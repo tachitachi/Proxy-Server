@@ -4928,11 +4928,12 @@ var RECV = {
 		],
 	},
 	0x02bb: {
-		name: 'unknown_packet_02bb', 
+		name: 'item_damaged', 
 		length: 8, 
 		log: 2,
 		data: [
-			{name: 'data', size: 6, type: 'byte', log: 1},
+			{name: 'pos', size: 2, type: 'int', log: 1},
+			{name: 'ID', size: 4, type: 'int', log: 1},
 		],
 	},
 	0x02bc: {

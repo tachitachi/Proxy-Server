@@ -203,6 +203,12 @@
 			audio.play();
 		});
 		
+		socket.on('voice', function(data){
+			window.speechSynthesis.cancel();
+			var msg = new SpeechSynthesisUtterance(data.msg);
+			window.speechSynthesis.speak(msg);
+		});
+		
 		socket.on('ChangeLocation', function(coords){
 			//console.log('calling ChangeLocation', coords);
 			var result = 'Good';

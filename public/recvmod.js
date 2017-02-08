@@ -2,6 +2,7 @@ var RES_MODIFY = 0;
 var RES_DROP = 1;
 var RES_CLIENT = 2;
 var RES_SERVER = 3;
+var RES_SPEECH = 4;
 
 var RECVMOD = {
 	// on packet recv:
@@ -120,6 +121,22 @@ var RECVMOD = {
 			],
 		},
 	],
+	0x0196: [
+		{
+			filter: {type: 417, flag: 0}, // when CC ends on me
+			useAccount: {field: 'ID', useMine: true}, // make sure this field is my own account
+			response: [
+				{cheat: false, type: RES_SPEECH, delay: 0, data: {msg: 'freedom'}},
+			],
+		},
+		{
+			filter: {type: 394, flag: 0}, // when my shadow form ends
+			useAccount: {field: 'ID', useMine: true}, // make sure this field is my own account
+			response: [
+				{cheat: false, type: RES_SPEECH, delay: 0, data: {msg: 'revealed'}},
+			],
+		},
+	],
 	
 //	0x01c8: [
 //		{
@@ -191,6 +208,15 @@ var RECVMOD = {
 			],
 		},
 	],
+	0x02bb: [
+		{
+			filter: { }, // cast Full Divest
+			useAccount: {field: 'ID', useMine: true}, // make sure this field is my own account
+			response: [
+				{cheat: false, type: RES_SPEECH, delay: 0, data: {msg: 'item damaged'}},
+			],
+		},
+	],
 	0x043d: [
 		{
 			filter: {skillId: 2304}, // Feint bomb
@@ -204,6 +230,14 @@ var RECVMOD = {
 				{cheat: true, type: RES_CLIENT, send: 0x01d0, delay: 5000, inField: null, outField:'sourceId', useMine: true, data: {entity: 0}}, // remove spirit spheres on cooldown end
 				//{cheat: true, type: RES_CLIENT, send: 0x010c, delay: 5000, inField: null, outField:'ID', useMine: true, data: {}}, // play MVP effect
 				{cheat: true, type: RES_CLIENT, send: 0x011a, delay: 5000, inField: null, outField:['sourceId','targetId'], useMine: true, data: {skillId: 2263, amount: 1, success: 1}}, // play Cooldown Effect
+				{cheat: false, type: RES_SPEECH, delay: 5000, data: {msg: 'Feint bomb'}}, 
+			],
+		},
+		{
+			filter: {skillId: 2303}, // Blood Lust
+			useAccount: {field: null, useMine: false}, 
+			response: [
+				{cheat: false, type: RES_SPEECH, delay: 180000, data: {msg: 'Blood Lust'}}, 
 			],
 		},
 //		{
@@ -234,6 +268,20 @@ var RECVMOD = {
 			useAccount: {field: null, useMine: true}, // make sure this field is my own account
 			response: [
 				{cheat: false, type: RES_MODIFY, data: {unknown1: 0}}, // don't display the hallucination effect
+			],
+		},
+		{
+			filter: {type: 417, flag: 1}, // When I'm cursed circled
+			useAccount: {field: 'ID', useMine: true}, // make sure this field is my own account
+			response: [
+				{cheat: false, type: RES_SPEECH, delay: 0, data: {msg: 'see seed'}}, // 
+			],
+		},
+		{
+			filter: {type: 394, flag: 1}, // When I shadow form
+			useAccount: {field: 'ID', useMine: true}, // make sure this field is my own account
+			response: [
+				{cheat: false, type: RES_SPEECH, delay: 0, data: {msg: 'shadow form'}}, // 
 			],
 		},
 	],
@@ -301,6 +349,34 @@ var RECVMOD = {
 			response: [
 				//{cheat: true, type: RES_CLIENT, send: 0x01d0, delay: 0, inField: null, outField:'sourceId', useMine: true, data: {entity: 5}}, 
 				{cheat: true, type: RES_CLIENT, send: 0x043f, delay: 0, inField: null, outField:'ID', useMine: true, data: {type: 184, tick: 10000, flag: 1, unknown1: 1, unknown2: 0, unknown3: 0}}, // add maya purple
+			],
+		},
+//		{
+//			filter: {skillId: 150}, // cast Backslide
+//			useAccount: {field: 'sourceId', useMine: true}, // make sure this field is my own account
+//			response: [
+//				{cheat: false, type: RES_SPEECH, delay: 0, data: {msg: 'backslide'}},
+//			],
+//		},
+		{
+			filter: {skillId: 2209}, // cast Stasis
+			useAccount: {field: 'sourceId', useMine: false}, // make sure this field is my own account
+			response: [
+				{cheat: false, type: RES_SPEECH, delay: 0, data: {msg: 'Stasis'}},
+			],
+		},
+		{
+			filter: {skillId: 2267}, // cast Suicidal Destruction
+			useAccount: {field: 'sourceId', useMine: false}, // make sure this field is my own account
+			response: [
+				{cheat: false, type: RES_SPEECH, delay: 0, data: {msg: 's d'}},
+			],
+		},
+		{
+			filter: {skillId: 2343}, // cast Gates of Hell
+			useAccount: {field: 'targetId', useMine: true}, // targetting me
+			response: [
+				{cheat: false, type: RES_SPEECH, delay: 0, data: {msg: 'gates'}},
 			],
 		},
 	],

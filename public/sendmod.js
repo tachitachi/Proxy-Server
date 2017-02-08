@@ -2,6 +2,7 @@ var RES_MODIFY = 0;
 var RES_DROP = 1;
 var RES_CLIENT = 2;
 var RES_SERVER = 3;
+var RES_SPEECH = 4;
 
 var SENDMOD = {
 	// on packet recv:
