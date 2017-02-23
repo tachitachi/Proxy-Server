@@ -108,4 +108,19 @@ var refill = {
 		616: 0, // Old Card Album
 		617: 0, // Old Purple Box
 	},
+	'Tofushi': {
+		602: 10, // Butterfly Wing
+		12437: 10, // Enrich Celermine Juice
+		12424: 10, // HP Increase Potion(Large)
+		656: 10, // Awakening Potion
+		12429: 10, // Savage BBQ
+		12414: 100, // Guarana Candy
+		12475: 50, // Cure Free
+		7621: 10, // Token of Siegfried
+		12646: 10, // Takoyaki
+		526: 200, // Royal Jelly
+		567: 40, // Shrimp
+		601: 150, // Fly Wing
+		12114: 100, // Fire Converter
+	},
 };

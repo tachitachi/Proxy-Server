@@ -9140,6 +9140,22 @@ var RECV = {
 			{name: 'detail', size: -1, type: 'string', log: 2},
 		],
 	},
+	0x0983: {
+		name: 'unknown_packet_0983', 
+		length: 29, 
+		log: 2,
+		data: [
+			{name: 'data', size: 27, type: 'byte', log: 1},
+		],
+	},
+	0x0984: {
+		name: 'unknown_packet_0984', 
+		length: 28, 
+		log: 2,
+		data: [
+			{name: 'data', size: 26, type: 'byte', log: 1},
+		],
+	},
 	0x0990: {
 		name: 'inventory_item_added', 
 		length: 31, 

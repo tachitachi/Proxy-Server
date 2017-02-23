@@ -43,6 +43,14 @@ var SEND = {
 			{name: 'targetId', size: 4, type: 'int', log: 2},
 		],
 	},
+	0x00ab: {
+		name: 'unequip_item', 
+		length: 4, 
+		log: 2,
+		data: [
+			{name: 'index', size: 2, type: 'int', log: 2},
+		],
+	},
 	0x00b2: {
 		name: 'restart', 
 		length: 3, 

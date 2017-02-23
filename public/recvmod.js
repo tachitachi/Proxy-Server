@@ -112,7 +112,7 @@ var RECVMOD = {
 		},
 		{
 			filter: {skillId: function(x){ 
-				var dropSkills = new Set([33, 75, 356, 2041, 2042, 2045, 2047, 2048]);
+				var dropSkills = new Set([33, 75, 356, 2041, 2042, 2045, 2047, 2048, 5033]);
 				return dropSkills.has(x);
 			}}, // cast Guard
 			useAccount: {field: 'sourceId', useMine: true}, // make sure this field is my own account
@@ -163,10 +163,22 @@ var RECVMOD = {
 			],
 		},
 		{
-			filter: {skillId: 2477}, // cast Cart Cannon
+			filter: {
+				skillId: function(x){ 
+					var dropSkills = new Set([2477]);
+					return dropSkills.has(x);
+				},
+			},				// drop cart cannon
 			useAccount: {field: null, useMine: true}, // make sure this field is my own account
 			response: [
 				{cheat: true, type: RES_MODIFY, data: {skillId: 93, option: 0}}, // replace with Sense, and make it 1 hit
+			],
+		},
+		{
+			filter: { skillId: 5033, },	// drop picky peck
+			useAccount: {field: null, useMine: true}, // make sure this field is my own account
+			response: [
+				{cheat: true, type: RES_MODIFY, data: {option: 0}}, //  make it 1 hit
 			],
 		},
 //		{
@@ -230,6 +242,8 @@ var RECVMOD = {
 				{cheat: true, type: RES_CLIENT, send: 0x01d0, delay: 5000, inField: null, outField:'sourceId', useMine: true, data: {entity: 0}}, // remove spirit spheres on cooldown end
 				//{cheat: true, type: RES_CLIENT, send: 0x010c, delay: 5000, inField: null, outField:'ID', useMine: true, data: {}}, // play MVP effect
 				{cheat: true, type: RES_CLIENT, send: 0x011a, delay: 5000, inField: null, outField:['sourceId','targetId'], useMine: true, data: {skillId: 2263, amount: 1, success: 1}}, // play Cooldown Effect
+				{cheat: false, type: RES_SPEECH, delay: 0, data: {msg: 'in viz'}}, 
+				{cheat: false, type: RES_SPEECH, delay: 1500, data: {msg: 'revealed'}}, 
 				{cheat: false, type: RES_SPEECH, delay: 5000, data: {msg: 'Feint bomb'}}, 
 			],
 		},
@@ -238,6 +252,48 @@ var RECVMOD = {
 			useAccount: {field: null, useMine: false}, 
 			response: [
 				{cheat: false, type: RES_SPEECH, delay: 180000, data: {msg: 'Blood Lust'}}, 
+			],
+		},
+		{
+			filter: {skillId: 5036}, // Lunatic Carrot Beat
+			useAccount: {field: null, useMine: false}, 
+			response: [
+				{cheat: false, type: RES_SPEECH, delay: 6000, data: {msg: 'Carrot'}}, 
+			],
+		},
+		{
+			filter: {skillId: 5046}, // Spirit of Savage
+			useAccount: {field: null, useMine: false}, 
+			response: [
+				{cheat: false, type: RES_SPEECH, delay: 22000, data: {msg: 'Savage'}}, 
+			],
+		},
+		{
+			filter: {skillId: 5022}, // Stoop
+			useAccount: {field: null, useMine: false}, 
+			response: [
+				{cheat: false, type: RES_SPEECH, delay: 15000, data: {msg: 'Stoop'}}, 
+			],
+		},
+		{
+			filter: {skillId: 5023}, // Lope
+			useAccount: {field: null, useMine: false}, 
+			response: [
+				{cheat: false, type: RES_SPEECH, delay: 5000, data: {msg: 'Leap'}}, 
+			],
+		},
+		{
+			filter: {skillId: 5045}, // Power of Lock
+			useAccount: {field: null, useMine: false}, 
+			response: [
+				{cheat: false, type: RES_SPEECH, delay: 100000, data: {msg: 'Freeze'}}, 
+			],
+		},
+		{
+			filter: {skillId: 5047}, // Hiss
+			useAccount: {field: null, useMine: false}, 
+			response: [
+				{cheat: false, type: RES_SPEECH, delay: 60000, data: {msg: 'Hiss'}}, 
 			],
 		},
 //		{
@@ -464,6 +520,15 @@ var RECVMOD = {
 //		},
 	],
 	
+	0x09db: [
+		{
+			filter: {lv: function(x){ return x == 99 || x == 150 || x == 160 || x == 175;}}, // Remove 175 Aura
+			useAccount: {field: null, useMine: false}, // make sure this field is my own account
+			response: [
+				{cheat: false, type: RES_MODIFY, data: {lv: 1}},
+			],
+		},
+	],
 	0x09dc: [
 		{
 			filter: {lv: function(x){ return x == 99 || x == 150 || x == 160 || x == 175;}}, // Remove 175 Aura

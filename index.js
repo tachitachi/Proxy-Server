@@ -1667,7 +1667,20 @@ function Log(type, ID, bytes){
 		LogServer.write(logPacket);
 	}
 }
+
+function LogDebug(type, ID, message){
+	if(LogServer !== null){
+		var header = 0x0005;
+		if (ID === undefined || ID === null){
+			ID = 0;
+		}
+		var bufferLength = 8 + bytes.length;
+		var logPacket = CreateLogPacketBuffer(header, {len: bufferLength, ID: ID, data: bytes}, bufferLength);
+		LogServer.write(logPacket);
+	}
+}
  
+net.createServer(CreateRequest('128.241.92.100')).listen(4500);
 net.createServer(CreateRequest('128.241.92.101')).listen(4501);
 net.createServer(CreateRequest('128.241.92.102')).listen(4502);
 net.createServer(CreateRequest('128.241.92.103')).listen(4503);

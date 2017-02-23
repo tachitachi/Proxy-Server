@@ -41,6 +41,15 @@ var LOGMESSAGE = {
 			{name: 'data', size: -1, type: 'byte', log: 1},
 		],
 	},
+	0x0005: {
+		name: 'log debug', 
+		length: -1, 
+		log: 2,
+		data: [
+			{name: 'len', size: 2, type: 'int', log: 1},
+			{name: 'message', size: -1, type: 'string', log: 1},
+		],
+	},
 }
 
 for(var i in LOGMESSAGE){
