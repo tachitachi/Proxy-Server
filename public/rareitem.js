@@ -16,4 +16,7 @@
 	 1696: true, // Doram Item
 	 1693: true, // Doram Item
 	 1697: true, // Doram Item
+	 28380: true, // Doram Item
+	 28381: true, // Doram Item
+	 28382: true, // Doram Item 
  };

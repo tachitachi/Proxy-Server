@@ -18,6 +18,19 @@ var SENDMOD = {
 //		],
 //	},
 
+//	0x0113: [
+//		{
+//			filter: {skillId: 5033}, // Double Picky Peck
+//			useAccount: {field: null, useMine: null}, // make sure this field is my own account
+//			response: [
+//				{cheat: true, type: RES_SERVER, send: 0x0113, delay: 450, inField: 'targetId', outField: 'targetId', useMine: null, data: {skillId: 5033, lv: 5}},
+//				{cheat: true, type: RES_SERVER, send: 0x0113, delay: 650, inField: 'targetId', outField: 'targetId', useMine: null, data: {skillId: 5033, lv: 5}}, 
+//				{cheat: true, type: RES_SERVER, send: 0x0113, delay: 850, inField: 'targetId', outField: 'targetId', useMine: null, data: {skillId: 5033, lv: 5}}, 
+//				
+//			],
+//		}
+//	],
+
 //	0x0366: [
 //		{
 //			filter: {skillId: 47}, // Arrow shower -> Land Mine

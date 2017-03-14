@@ -12,11 +12,15 @@ var RECVMOD = {
 	//		3. send to client 	(cheat: bool, type: client, delay: int, send: header, inField: str, outField: str, useMine: bool, data: obj)
 	//		4. send to server 	(cheat: bool, type: server, send: header, data: obj)
 	
-//	0x00b0: {
-//		response: [
-//			{cheat: true, type: RES_SERVER, send: },
-//		],
-//	},
+//	0x00b0: [
+//		{
+//			filter: {type: 53}, // Identify unidentified items that exist
+//			useAccount: {field: null, useMine: false}, 
+//			response: [
+//				{cheat: true, type: RES_MODIFY, data: {val: 50}},
+//			],
+//		},
+//	],
 
 //	0x0092: [
 //		{
@@ -112,7 +116,7 @@ var RECVMOD = {
 		},
 		{
 			filter: {skillId: function(x){ 
-				var dropSkills = new Set([33, 75, 356, 2041, 2042, 2045, 2047, 2048, 5033]);
+				var dropSkills = new Set([33, 75, 356, 2041, 2042, 2045, 2047, 2048, 5041]);
 				return dropSkills.has(x);
 			}}, // cast Guard
 			useAccount: {field: 'sourceId', useMine: true}, // make sure this field is my own account
@@ -136,18 +140,28 @@ var RECVMOD = {
 				{cheat: false, type: RES_SPEECH, delay: 0, data: {msg: 'revealed'}},
 			],
 		},
+		{
+			filter: {type: 893, flag: 0}, // when my stoop ends
+			useAccount: {field: 'ID', useMine: true}, // make sure this field is my own account
+			response: [
+				{cheat: false, type: RES_SPEECH, delay: 0, data: {msg: 'vulnerable'}},
+			],
+		},
+		{
+			filter: {type: 613, flag: 0}, // when my stoop ends
+			useAccount: {field: 'ID', useMine: true}, // make sure this field is my own account
+			response: [
+				{cheat: false, type: RES_SPEECH, delay: 3000, data: {msg: 'mount'}},
+			],
+		},
 	],
 	
 //	0x01c8: [
 //		{
-//			filter: {itemId: function(x){ 
-//				var hpItems = new Set([547, 11503, 12192]);
-//				return hpItems.has(x);
-//			}}, // cast Guard
-//			useAccount: {field: null, useMine: false},
+//			filter: {itemId: 12622}, // use Halter Lead 30 days
+//			useAccount: {field: 'ID', useMine: true},
 //			response: [
-//				{cheat: true, type: RES_MODIFY, data: {itemId: 519}},
-//				{cheat: true, type: RES_CLIENT, send: 0x00c0, delay: 0, inField: 'ID', outField:'ID', useMine: false, data: {type: 27}}, 
+//				{cheat: false, type: RES_SPEECH, delay: 3000, data: {msg: 'mount'}},
 //			],
 //		},
 //	],
@@ -175,10 +189,24 @@ var RECVMOD = {
 			],
 		},
 		{
-			filter: { skillId: 5033, },	// drop picky peck
-			useAccount: {field: null, useMine: true}, // make sure this field is my own account
+			filter: { skillId: 5033},	// drop picky peck
+			useAccount: {field: 'sourceId', useMine: true}, // make sure this field is my own account
 			response: [
-				{cheat: true, type: RES_MODIFY, data: {option: 0}}, //  make it 1 hit
+				{cheat: true, type: RES_MODIFY, data: {option: 0, src_speed: 100}}, //  make it 1 hit
+			],
+		},
+		{
+			filter: { skillId: 5033, src_speed: function(x) { return x > 100; } },	// drop picky peck
+			useAccount: {field: 'sourceId', useMine: true}, // make sure this field is my own account
+			response: [
+				{cheat: true, type: RES_MODIFY, data: {option: 0, src_speed: 100}}, //  make it 1 hit
+			],
+		},
+		{
+			filter: { skillId: 5033, src_speed: function(x) { return x > 100; } },	// drop picky peck
+			useAccount: {field: 'sourceId', useMine: true}, // make sure this field is my own account
+			response: [
+				{cheat: false, type: RES_MODIFY, data: {option: 5, src_speed: 100}}, //  make it 1 hit
 			],
 		},
 //		{
@@ -296,6 +324,13 @@ var RECVMOD = {
 				{cheat: false, type: RES_SPEECH, delay: 60000, data: {msg: 'Hiss'}}, 
 			],
 		},
+		{
+			filter: {skillId: 5032}, // Scar of Tarou
+			useAccount: {field: null, useMine: false}, 
+			response: [
+				{cheat: false, type: RES_SPEECH, delay: 12000, data: {msg: 'Scar'}}, 
+			],
+		},
 //		{
 //			filter: {skillId: 2447}, // Diamond Dust
 //			useAccount: {field: null, useMine: false}, 
@@ -338,6 +373,65 @@ var RECVMOD = {
 			useAccount: {field: 'ID', useMine: true}, // make sure this field is my own account
 			response: [
 				{cheat: false, type: RES_SPEECH, delay: 0, data: {msg: 'shadow form'}}, // 
+			],
+		},
+		{
+			filter: {type: 893, flag: 1}, // When I stoop
+			useAccount: {field: 'ID', useMine: true}, // make sure this field is my own account
+			response: [
+				{cheat: false, type: RES_SPEECH, delay: 0, data: {msg: 'tank'}}, // 
+			],
+		},
+		{
+			filter: {type: 613, flag: 1}, // When I mount
+			useAccount: {field: 'ID', useMine: true}, // make sure this field is my own account
+			response: [
+				{cheat: false, type: RES_SPEECH, delay: 3000, data: {msg: 'mount'}}, // 
+			],
+		},
+	],
+	
+	0x0983: [
+		{
+			filter: {type: 34, flag: 1}, // Hallucination effect? 
+			useAccount: {field: 'ID', useMine: true}, // make sure this field is my own account
+			response: [
+				{cheat: false, type: RES_MODIFY, data: {flag: 0}}, // don't display the hallucination effect
+			],
+		},
+		{
+			filter: {type: 621}, // Hallucination effect? Transformation scroll?
+			useAccount: {field: null, useMine: true}, // make sure this field is my own account
+			response: [
+				{cheat: false, type: RES_MODIFY, data: {unknown1: 0}}, // don't display the hallucination effect
+			],
+		},
+		{
+			filter: {type: 417, flag: 1}, // When I'm cursed circled
+			useAccount: {field: 'ID', useMine: true}, // make sure this field is my own account
+			response: [
+				{cheat: false, type: RES_SPEECH, delay: 0, data: {msg: 'see seed'}}, // 
+			],
+		},
+		{
+			filter: {type: 394, flag: 1}, // When I shadow form
+			useAccount: {field: 'ID', useMine: true}, // make sure this field is my own account
+			response: [
+				{cheat: false, type: RES_SPEECH, delay: 0, data: {msg: 'shadow form'}}, // 
+			],
+		},
+		{
+			filter: {type: 893, flag: 1}, // When I stoop
+			useAccount: {field: 'ID', useMine: true}, // make sure this field is my own account
+			response: [
+				{cheat: false, type: RES_SPEECH, delay: 0, data: {msg: 'tank'}}, // 
+			],
+		},
+		{
+			filter: {type: 613, flag: 1}, // When I mount
+			useAccount: {field: 'ID', useMine: true}, // make sure this field is my own account
+			response: [
+				{cheat: false, type: RES_SPEECH, delay: 3000, data: {msg: 'mount'}}, // 
 			],
 		},
 	],

@@ -9141,11 +9141,18 @@ var RECV = {
 		],
 	},
 	0x0983: {
-		name: 'unknown_packet_0983', 
+		name: 'actor_status_active_0983', 
 		length: 29, 
 		log: 2,
 		data: [
-			{name: 'data', size: 27, type: 'byte', log: 1},
+			{name: 'type', size: 2, type: 'int', log: 2},
+			{name: 'ID', size: 4, type: 'int', log: 2},
+			{name: 'flag', size: 1, type: 'int', log: 2},
+			{name: 'total', size: 4, type: 'int', log: 2},
+			{name: 'tick', size: 4, type: 'int', log: 2},
+			{name: 'unknown1', size: 4, type: 'int', log: 1},
+			{name: 'unknown2', size: 4, type: 'int', log: 1},
+			{name: 'unknown3', size: 4, type: 'int', log: 1},
 		],
 	},
 	0x0984: {

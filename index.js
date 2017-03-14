@@ -37,7 +37,7 @@ eval(fs.readFileSync('LogMessage.js').toString());
 app.use(express.static(__dirname + '/public'));
 
 process.on("uncaughtException", function(e) {
-    console.log(e);
+    console.log(e.stack);
 });
 
 app.use(express.static(__dirname + '/public'));
@@ -430,7 +430,7 @@ function HandleSend(packet, accountInfo, proxySocket, serviceSocket){
 	if(SENDMOD.hasOwnProperty(packet.header) && SEND.hasOwnProperty(packet.header)){
 		var modDefinitionList = SENDMOD[packet.header];
 		var packetDefinition = SEND[packet.header];
-		console.log(modDefinitionList);
+		//console.log(modDefinitionList);
 		
 		// check each filter
 		
@@ -449,7 +449,6 @@ function HandleSend(packet, accountInfo, proxySocket, serviceSocket){
 			var noMatch = false;
 			
 			for(var key in modDefinition.filter){
-				console.log('im here 3');
 				// get start/end and read in
 				var dataInfo = packetDefinition.datamap[key];
 				// TODO: assume type INT for now
@@ -572,8 +571,8 @@ function HandleSend(packet, accountInfo, proxySocket, serviceSocket){
 					}
 					else if(modifiedResponse.useMine !== undefined && !modifiedResponse.useMine && modifiedResponse.inField !== undefined && modifiedResponse.inField !== undefined){
 						//var inFieldData = response.data[modifiedResponse.inField]
-						
-						var inFieldData = packet.data[RECV[packet.header].datamap[modifiedResponse.inField].index].value;
+						//console.log(packet);
+						var inFieldData = packet.data[SEND[packet.header].datamap[modifiedResponse.inField].index].value;
 						if(typeof(modifiedResponse.outField) === 'string'){
 							modifiedResponse.data[modifiedResponse.outField] = inFieldData;
 						}
@@ -708,6 +707,10 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 			// max sp
 			accountInfo.maxSp = val;
 			break;
+		case 53:
+			// aspd
+			accountInfo.aspd = val;
+			break;
 		default:
 		
 			break;
@@ -753,7 +756,10 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 			
 		accountInfo.name = null;
 		accountInfo.currentHp = 0;
+		accountInfo.currentSp = 0;
+		accountInfo.maxHp = 0;
 		accountInfo.maxSp = 0;
+        accountInfo.aspd = 0;
 		accountInfo.currentSp = 0;
 		accountInfo.items = {};
 		accountInfo.nodelay = false;
@@ -997,6 +1003,7 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 		
 		if(accountInfo.inventoryByIndex.hasOwnProperty(itemIndex)){
 			var itemId = accountInfo.inventoryByIndex[itemIndex];
+			// TODO: Change to mimic actual inventory
 			var itemInfo = accountInfo.inventory[itemId];
 			itemInfo.amount -= amount;
 			//console.log('[{0}] removed item at {1}, amount: {2}, left: {3}'.format(accountInfo.accountId, itemIndex, amount, itemInfo.amount));
@@ -1422,7 +1429,10 @@ function AccountInfo(){
 	this.accountId = 0;
 	this.name = null;
 	this.currentHp = 0;
+	this.currentSp = 0;
+	this.maxHp = 0;
 	this.maxSp = 0;
+    this.aspd = 0;
 	this.currentSp = 0;
 	this.items = {};
 	this.nodelay = false;
@@ -1539,6 +1549,12 @@ function CreateRequest(host)
 			}
 		});
 		serviceSocket.on("data", function(data) {		
+		
+			if(!bPneumaGridEnabled){
+				proxySocket.write(data);
+				return;
+			}
+		
 			PACKET_RECV_BUFFER.Add(data);
 			var packetList = [];
 			var packet = PACKET_RECV_BUFFER.GetNextPacket();
