@@ -2724,11 +2724,13 @@ var RECV = {
 		],
 	},
 	0x01a4: {
-		name: 'unknown_packet_01a4', 
+		name: 'pet_data', 
 		length: 11, 
 		log: 2,
 		data: [
-			{name: 'data', size: 9, type: 'byte', log: 1},
+			{name: 'type', size: 1, type: 'int', log: 1},
+			{name: 'ID', size: 4, type: 'int', log: 1},
+			{name: 'data', size: 4, type: 'int', log: 1},
 		],
 	},
 	0x01a5: {
@@ -6193,11 +6195,13 @@ var RECV = {
 	},
 	0x0814: {
 		name: 'buying_store_found', 
-		length: -1, 
+		length: 86, 
 		log: 1,
 		data: [
-			{name: 'ID', size: 4, type: 'int', log: 2},
-			{name: 'title', size: -1, type: 'string', log: 2},
+			//{name: 'len', size: 2, type: 'int', log: 2},
+			//{name: 'ID', size: 4, type: 'int', log: 2},
+			//{name: 'data', size: -1, type: 'byte', log: 2},
+			{name: 'data', size: 84, type: 'byte', log: 2},
 		],
 	},
 	0x0815: {
@@ -9468,6 +9472,15 @@ var RECV = {
 			{name: 'font', size: 2, type: 'int', log: 0},
 			{name: 'opt4', size: 9, type: 'byte', log: 0},
 			{name: 'name', size: -1, type: 'string', log: 2},
+		],
+	},
+	0x09de: {
+		name: 'unknown_packet_09de', 
+		length: -1, 
+		log: 2,
+		data: [
+			{name: 'len', size: 2, type: 'int', log: 2},
+			{name: 'data', size: -1, type: 'byte', log: 1},
 		],
 	},
 	0x0a0a: {

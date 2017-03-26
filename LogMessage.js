@@ -42,12 +42,33 @@ var LOGMESSAGE = {
 		],
 	},
 	0x0005: {
-		name: 'log debug', 
+		name: 'send debug', 
 		length: -1, 
 		log: 2,
 		data: [
 			{name: 'len', size: 2, type: 'int', log: 1},
-			{name: 'message', size: -1, type: 'string', log: 1},
+			{name: 'ID', size: 4, type: 'int', log: 1},
+			{name: 'data', size: -1, type: 'byte', log: 1},
+		],
+	},
+	0x0006: {
+		name: 'log debug packet', 
+		length: -1, 
+		log: 2,
+		data: [
+			{name: 'len', size: 2, type: 'int', log: 1},
+			{name: 'time', size: 4, type: 'int', log: 1},
+			{name: 'frac', size: 2, type: 'int', log: 1},
+			{name: 'data', size: -1, type: 'byte', log: 1},
+		],
+	},
+	0x0007: {
+		name: 'log packet', 
+		length: -1, 
+		log: 2,
+		data: [
+			{name: 'len', size: 2, type: 'int', log: 1},
+			{name: 'message', size: -1, type: 'byte', log: 1},
 		],
 	},
 }

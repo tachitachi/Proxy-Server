@@ -152,6 +152,14 @@ var SEND = {
 			{name: 'ID', size: 4, type: 'int', log: 2},
 		],
 	},
+	0x0151: {
+		name: 'guild_emblem_request', 
+		length: 6, 
+		log: 2,
+		data: [
+			{name: 'ID', size: 4, type: 'int', log: 2},
+		],
+	},
 	0x01a1: {
 		name: 'pet_menu_action', 
 		length: 3, 
@@ -266,6 +274,14 @@ var SEND = {
 	},
 	0x0368: {
 		name: 'actor_info_request', 
+		length: 6, 
+		log: 2,
+		data: [
+			{name: 'ID', size: 4, type: 'int', log: 2},
+		],
+	},
+	0x0369: {
+		name: 'actor_name_request', 
 		length: 6, 
 		log: 2,
 		data: [

@@ -49,6 +49,7 @@ process.argv.forEach(function (val, index, array) {
 var PACKET_LOG_BUFFER = new PacketBuffer(LOGMESSAGE, 1);
 var RECV_BUFFER = new PacketBuffer(RECV, 1);
 var SEND_BUFFER = new PacketBuffer(SEND, 1);
+var LOG_BUFFER = new PacketBuffer(LOGMESSAGE, 1);
 
 if(inlogfile !== null){
 	fs.readFile(inlogfile, function (err, data) {
@@ -90,9 +91,26 @@ if(inlogfile !== null){
 				}
 			
 				break;
+			case 0x0006:
+			
+				var debugPackets = ParsePackets(LOG_BUFFER, packetBlob)
+				for(var packetIdx = 0; packetIdx < debugPackets.length; packetIdx++){
+					debugPackets[packetIdx].SetTime(timestamp);
+					var packetText = '[debug] ' + debugPackets[packetIdx].toString() + '\n';
+					logText += packetText;
+				}
+			
+				break;
 			default:
+                console.log('unknown packet header {0}'.format(packet.header));
 				break;
 			}
+            
+            
+            if(logText.length > 1000000){
+                fs.appendFileSync(outlogfile, logText, 'utf-8');
+                logText = '';
+            }
 		}
 		
 			

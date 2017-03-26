@@ -2,9 +2,9 @@
 	//1007: 1751, // Fabre -> Valkyrie Randgris
 	//1007: 1288, // Fabre -> Emperium
 	//1018: 3074, // Creamy -> Time Holder
-	1891: 1002, // Valkyrie Mob -> Poring
 	1288: 1097, // Emperium -> Ant Egg
     3007: 1097, // Morse Corpse -> Ant Egg
+    
     1786: 1002, // Agav (Ghost)
     1739: 1002, // Alicel (Ghost)
     1740: 1002, // Aliot (Ghost)
@@ -38,7 +38,7 @@
     1564: 1002, // Evil Nymph (Ghost)
     1419: 1002, // Familiar (Ghost)
     2229: 1002, // Flamel (Ghost)
-    1594: 1002, // Freezer (Ghost)
+    1594: 1242, // Freezer (Ghost)
     1762: 1002, // Frus (Ghost)
     1791: 1002, // Galion (Ghost)
     2232: 1002, // Gertie (Ghost)
@@ -76,7 +76,7 @@
     2228: 1002, // Randel (Ghost)
     1794: 1002, // Roween (Ghost)
     2280: 1002, // Rudo (Ghost)
-    1834: 1002, // Salamander (Ghost)
+    1834: 1242, // Salamander (Ghost)
     2279: 1002, // Samurai Soheon (Ghost)
     1558: 1002, // Sandman (Ghost)
     1607: 1002, // Santa Goblin (Ghost)

@@ -336,10 +336,6 @@ var servicePort = 4500;
 
 var tcpConnectionStart = new Buffer([0x04, 0x01, 0x11, 0x94, 0x80, 0xf1, 0x5c, 0x72, 0x00]);
 
-
-var mayaPurplePacket = new Buffer([0x3f, 0x04, 0xb8, 0x00, 0xf4, 0x3f, 0x1c, 0x00, 0x01, 0x30, 0x75, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]);
-
-
 //								   [header    ][ accountId           ][type][jobId                 ]  
 //var jobChangePacket = new Buffer([0xd7, 0x01, 0xf4, 0x3f, 0x1c, 0x00, 0x00, 0xef, 0x0f, 0x00, 0x00]);
 
@@ -1684,14 +1680,18 @@ function Log(type, ID, bytes){
 	}
 }
 
-function LogDebug(type, ID, message){
+function LogDebug(ID, message){
 	if(LogServer !== null){
 		var header = 0x0005;
 		if (ID === undefined || ID === null){
 			ID = 0;
 		}
-		var bufferLength = 8 + bytes.length;
-		var logPacket = CreateLogPacketBuffer(header, {len: bufferLength, ID: ID, data: bytes}, bufferLength);
+        var messageBuffer = StringToBuffer(AsciiToHex(message).join(' '));
+		var debugLength = message.length + 5;
+		var debugPacket = CreateLogPacketBuffer(0x0007, {len: debugLength, message: messageBuffer}, debugLength);
+        
+		var bufferLength = 8 + debugPacket.length;
+		var logPacket = CreateLogPacketBuffer(header, {len: bufferLength, ID: ID, data: debugPacket}, bufferLength);
 		LogServer.write(logPacket);
 	}
 }

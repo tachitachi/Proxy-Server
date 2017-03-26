@@ -155,6 +155,17 @@ var RECVMOD = {
 			],
 		},
 	],
+    
+    0x01a4: [
+        {
+			filter: {type: 2, data: function(x) { return x < 60; } }, // when pet hunger is below 60
+			useAccount: {field: null, useMine: false}, 
+			response: [
+				{cheat: false, type: RES_SPEECH, delay: 0, data: {msg: 'hungry'}},
+                {cheat: true, type: RES_SERVER, send: 0x01a1, delay: 0, data: {option: 1}}, // feed pet
+			],
+		},
+    ],
 	
 //	0x01c8: [
 //		{

@@ -29,7 +29,7 @@ eval(fs.readFileSync('constants.js').toString());
 eval(fs.readFileSync('LogMessage.js').toString());
 
 process.on("uncaughtException", function(e) {
-    console.log(e);
+    console.log(e.stack);
 });
 
 
@@ -52,6 +52,7 @@ var PACKET_LOG_BUFFER = new PacketBuffer(LOGMESSAGE, 1);
 
 var RECV_BUFFER = {};
 var SEND_BUFFER = {};
+var LOG_BUFFER = {};
 
 
 // TODO: Move some of these to constants?
@@ -93,9 +94,15 @@ function HandleLog(packet){
 		webMessage = 'log send';
 		logHeader = 0x0004;
 		break;
+	case 0x0005:
+		packetBuffer = LOG_BUFFER;
+		packetDef = LOGMESSAGE;
+		webMessage = 'log debug';
+		logHeader = 0x0006;
+		break;
 	default:
 		// Unknown packet header
-		Console.log('Unknown packet header', packet.header);
+		console.log('Unknown packet header', packet.header);
 		return;
 	}
 	
@@ -107,8 +114,9 @@ function HandleLog(packet){
 	if(!packetBuffer.hasOwnProperty(ID)){
 		packetBuffer[ID] = new PacketBuffer(packetDef, 1);
 	}
-	
+	//console.log(packet.toString());
 	var packetData = packet.data[LOGMESSAGE[packet.header].datamap.data.index].value;
+    //console.log(packet.toString());
 	
 	var parsedPackets = ParsePackets(packetBuffer[ID], packetData);
 	//console.log(parsedPackets);

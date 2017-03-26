@@ -118,10 +118,11 @@ var refill = {
 //		12433: 5, // Drosera Herb Stew
 //		12434: 5, // Petite Tail Noodles
 //		12432: 5, // Siroma Icetea
+//		12430: 5, // Warg Blood Cocktail
 //		12118: 5, // Fireproof Potion
 //		12119: 5, // Coldproof Potion
 //		12121: 5, // Thunderproof Potion
-//		12116: 1, // Earthproof Potion
+//		12120: 5, // Earthproof Potion
 //		12414: 50, // Guarana Candy
 //		12016: 40, // Speed Potion
 //		12475: 50, // Cure Free
@@ -140,11 +141,15 @@ var refill = {
 //		11547: 50, // WoE Violet Potion
 //		12679: 10, // WoE White Potion Box
 //		11548: 50, // WoE White Potion
-//		//1025: 0, // Cobweb
+//		1025: 50, // Cobweb
 //		12412: 0, // HE Gum
 //		14535: 10, // Medium Life Potion
 //		617: 0, // Old Purple Box
-//      12246: 0, // Mystical Card Album
+//        12246: 0, // Mystical Card Album
+//        643: 0, // Pet Incubator
+//        6110: 0, // Vital Yellow Flower
+//		12192: 0, // Pumpkin Pie
+//        12135: 50, // Green Ale
 //	},
 	'Tofushi': { // MVP
 		602: 10, // Butterfly Wing
@@ -184,5 +189,7 @@ var refill = {
 		14535: 10, // Medium Life Potion
 		617: 0, // Old Purple Box
         12246: 0, // Mystical Card Album
+        643: 20, // Pet Incubator
+        6110: 100, // Vital Yellow Flower
 	},
 };
