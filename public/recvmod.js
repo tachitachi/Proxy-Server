@@ -9,7 +9,7 @@ var RECVMOD = {
 	// respond with 1 or more of:
 	//		1. modify			(cheat: bool, type: modify, data: obj)
 	//		2. drop				(cheat: bool, type: drop)
-	//		3. send to client 	(cheat: bool, type: client, delay: int, send: header, inField: str, outField: str, useMine: bool, data: obj)
+	//		3. send to client 	(cheat: bool, type: client, delay: int, send: header, inField: str, myField: str, useMine: bool, data: obj)
 	//		4. send to server 	(cheat: bool, type: server, send: header, data: obj)
 	
 //	0x00b0: [
@@ -58,7 +58,7 @@ var RECVMOD = {
 //			filter: {}, // Identify unidentified items that drop
 //			useAccount: {field: null, useMine: false}, 
 //			response: [
-//				{cheat: true, type: RES_SERVER, send: 0x00b9, delay: 0, inField: 'ID', outField:'ID', useMine: false, data: {}}, 
+//				{cheat: true, type: RES_SERVER, send: 0x00b9, delay: 0, inField: 'ID', myField:'ID', useMine: false, data: {}}, 
 //			],
 //		},
 //	],
@@ -68,7 +68,7 @@ var RECVMOD = {
 //			filter: {}, // Identify unidentified items that drop
 //			useAccount: {field: null, useMine: false}, 
 //			response: [
-//				{cheat: true, type: RES_SERVER, send: 0x0146, delay: 0, inField: 'ID', outField:'ID', useMine: false, data: {}}, 
+//				{cheat: true, type: RES_SERVER, send: 0x0146, delay: 0, inField: 'ID', myField:'ID', useMine: false, data: {}}, 
 //			],
 //		},
 //	],
@@ -76,7 +76,7 @@ var RECVMOD = {
 	0x0117: [
 		{
 			filter: {skillId: function(x){ 
-				var dropSkills = new Set([5004, 2008, 405]);
+				var dropSkills = new Set([5004, 2008]);
 				return dropSkills.has(x);
 			}}, // cast Water Dragon Breath, Dragon Breath, Fiberlock
 			useAccount: {field: 'sourceId', useMine: true}, // make sure this field is my own account
@@ -106,7 +106,7 @@ var RECVMOD = {
 	0x011a: [
 		{
 			filter: {skillId: function(x){ 
-				var dropSkills = new Set([28, 51, 214, 249, 1005, 2477]);
+				var dropSkills = new Set([28, 51, 214, 1005, 2477]);
 				return dropSkills.has(x);
 			}}, // cast Guard
 			useAccount: {field: 'sourceId', useMine: true}, // make sure this field is my own account
@@ -124,6 +124,24 @@ var RECVMOD = {
 				{cheat: false, type: RES_DROP},
 			],
 		},
+		{
+			filter: { skillId: 5029 }, // cast SV Root
+			useAccount: {field: 'sourceId', useMine: true}, // make sure this field is my own account
+			response: [
+				{cheat: false, type: RES_DROP},
+				{cheat: false, type: RES_CLIENT, send: 0x01de, delay: 0, inField: 'targetId', outField: 'targetId', myField:'sourceId', useMine: true, data: {skillId: 5029, src_speed: 100, dst_speed: 1, damage: 100, level: 1, option: 0, type: 8}},
+                //[Skill: Unknown Skill 5033] [sourceId: 3802723] [targetId: 56093] [tick: 289136454] [src_speed: 270] [dst_speed: 1] [damage: 0] [level: 5] [option: 5] [type: 8]
+			],
+		},
+//		{
+//			filter: { skillId: 405 }, // cast Fiber Lock
+//			useAccount: {field: 'sourceId', useMine: true}, // make sure this field is my own account
+//			response: [
+//				{cheat: true, type: RES_DROP},
+//				{cheat: true, type: RES_CLIENT, send: 0x01de, delay: 0, inField: 'targetId', outField: 'targetId', myField:'sourceId', useMine: true, data: {skillId: 405, src_speed: 100, dst_speed: 1, damage: 1, level: 1, option: 0, type: 8}},
+//                //[Skill: Unknown Skill 5033] [sourceId: 3802723] [targetId: 56093] [tick: 289136454] [src_speed: 270] [dst_speed: 1] [damage: 0] [level: 5] [option: 5] [type: 8]
+//			],
+//		},
 	],
 	0x0196: [
 		{
@@ -183,8 +201,8 @@ var RECVMOD = {
 			useAccount: {field: null, useMine: true}, // make sure this field is my own account
 			response: [
 				{cheat: true, type: RES_MODIFY, data: {skillId: 93, option: 0}}, // replace with Sense, and make it 1 hit
-				//{cheat: true, type: RES_SERVER, send: 0x0113, delay: 300, inField: 'targetId', outField:'targetId', useMine: false, data: {skillId: 2294, lv: 3}}, 
-				//{cheat: true, type: RES_SERVER, send: 0x0113, delay: 300, inField: 'targetId', outField:'targetId', useMine: false, data: {skillId: 2297, lv: 3}}, 
+				//{cheat: true, type: RES_SERVER, send: 0x0113, delay: 300, inField: 'targetId', myField:'targetId', useMine: false, data: {skillId: 2294, lv: 3}}, 
+				//{cheat: true, type: RES_SERVER, send: 0x0113, delay: 300, inField: 'targetId', myField:'targetId', useMine: false, data: {skillId: 2297, lv: 3}}, 
 			],
 		},
 		{
@@ -199,25 +217,33 @@ var RECVMOD = {
 				{cheat: true, type: RES_MODIFY, data: {skillId: 93, option: 0}}, // replace with Sense, and make it 1 hit
 			],
 		},
+//		{
+//			filter: { skillId: 5033},	// drop picky peck
+//			useAccount: {field: 'sourceId', useMine: true}, // make sure this field is my own account
+//			response: [
+//				{cheat: true, type: RES_MODIFY, data: {option: 0, src_speed: 100}}, //  make it 1 hit
+//			],
+//		},
 		{
-			filter: { skillId: 5033},	// drop picky peck
+			filter: { skillId: 5033, src_speed: function(x) { return x > 100; } },	// drop picky peck
 			useAccount: {field: 'sourceId', useMine: true}, // make sure this field is my own account
 			response: [
 				{cheat: true, type: RES_MODIFY, data: {option: 0, src_speed: 100}}, //  make it 1 hit
 			],
 		},
+//		{
+//			filter: { skillId: 5029 },	// SV Root
+//			useAccount: {field: 'sourceId', useMine: false}, // make sure this field is my own account
+//			response: [
+//				{cheat: false, type: RES_SPEECH, delay: 0, data: {msg: 'replace'}},
+//				{cheat: false, type: RES_MODIFY, data: {skillId: 5033, option: 1, src_speed: 100}}, //  make it 1 hit
+//			],
+//		},
 		{
-			filter: { skillId: 5033, src_speed: function(x) { return x > 100; } },	// drop picky peck
+			filter: {skillId: 5033, src_speed: function(x) { return x > 100; } },	// drop picky peck
 			useAccount: {field: 'sourceId', useMine: true}, // make sure this field is my own account
 			response: [
-				{cheat: true, type: RES_MODIFY, data: {option: 0, src_speed: 100}}, //  make it 1 hit
-			],
-		},
-		{
-			filter: { skillId: 5033, src_speed: function(x) { return x > 100; } },	// drop picky peck
-			useAccount: {field: 'sourceId', useMine: true}, // make sure this field is my own account
-			response: [
-				{cheat: false, type: RES_MODIFY, data: {option: 5, src_speed: 100}}, //  make it 1 hit
+				{cheat: false, type: RES_MODIFY, data: {src_speed: 100}}, //  make it 1 hit
 			],
 		},
 //		{
@@ -273,14 +299,14 @@ var RECVMOD = {
 			filter: {skillId: 2304}, // Feint bomb
 			useAccount: {field: null, useMine: false}, 
 			response: [
-				{cheat: true, type: RES_CLIENT, send: 0x01d0, delay: 0, inField: null, outField:'sourceId', useMine: true, data: {entity: 5}}, // show spirit spheres on cooldown start
-				{cheat: true, type: RES_CLIENT, send: 0x01d0, delay: 1000, inField: null, outField:'sourceId', useMine: true, data: {entity: 4}}, 
-				{cheat: true, type: RES_CLIENT, send: 0x01d0, delay: 2000, inField: null, outField:'sourceId', useMine: true, data: {entity: 3}}, 
-				{cheat: true, type: RES_CLIENT, send: 0x01d0, delay: 3000, inField: null, outField:'sourceId', useMine: true, data: {entity: 2}}, 
-				{cheat: true, type: RES_CLIENT, send: 0x01d0, delay: 4000, inField: null, outField:'sourceId', useMine: true, data: {entity: 1}}, 
-				{cheat: true, type: RES_CLIENT, send: 0x01d0, delay: 5000, inField: null, outField:'sourceId', useMine: true, data: {entity: 0}}, // remove spirit spheres on cooldown end
-				//{cheat: true, type: RES_CLIENT, send: 0x010c, delay: 5000, inField: null, outField:'ID', useMine: true, data: {}}, // play MVP effect
-				{cheat: true, type: RES_CLIENT, send: 0x011a, delay: 5000, inField: null, outField:['sourceId','targetId'], useMine: true, data: {skillId: 2263, amount: 1, success: 1}}, // play Cooldown Effect
+				{cheat: true, type: RES_CLIENT, send: 0x01d0, delay: 0, inField: null, myField:'sourceId', useMine: true, data: {entity: 5}}, // show spirit spheres on cooldown start
+				{cheat: true, type: RES_CLIENT, send: 0x01d0, delay: 1000, inField: null, myField:'sourceId', useMine: true, data: {entity: 4}}, 
+				{cheat: true, type: RES_CLIENT, send: 0x01d0, delay: 2000, inField: null, myField:'sourceId', useMine: true, data: {entity: 3}}, 
+				{cheat: true, type: RES_CLIENT, send: 0x01d0, delay: 3000, inField: null, myField:'sourceId', useMine: true, data: {entity: 2}}, 
+				{cheat: true, type: RES_CLIENT, send: 0x01d0, delay: 4000, inField: null, myField:'sourceId', useMine: true, data: {entity: 1}}, 
+				{cheat: true, type: RES_CLIENT, send: 0x01d0, delay: 5000, inField: null, myField:'sourceId', useMine: true, data: {entity: 0}}, // remove spirit spheres on cooldown end
+				//{cheat: true, type: RES_CLIENT, send: 0x010c, delay: 5000, inField: null, myField:'ID', useMine: true, data: {}}, // play MVP effect
+				{cheat: true, type: RES_CLIENT, send: 0x011a, delay: 5000, inField: null, myField:['sourceId','targetId'], useMine: true, data: {skillId: 2263, amount: 1, success: 1}}, // play Cooldown Effect
 				{cheat: false, type: RES_SPEECH, delay: 0, data: {msg: 'in viz'}}, 
 				{cheat: false, type: RES_SPEECH, delay: 1500, data: {msg: 'revealed'}}, 
 				{cheat: false, type: RES_SPEECH, delay: 5000, data: {msg: 'Feint bomb'}}, 
@@ -346,13 +372,13 @@ var RECVMOD = {
 //			filter: {skillId: 2447}, // Diamond Dust
 //			useAccount: {field: null, useMine: false}, 
 //			response: [
-//				{cheat: true, type: RES_CLIENT, send: 0x01d0, delay: 0, inField: null, outField:'sourceId', useMine: true, data: {entity: 5}}, 
-//				{cheat: true, type: RES_CLIENT, send: 0x01d0, delay: 1000, inField: null, outField:'sourceId', useMine: true, data: {entity: 4}}, 
-//				{cheat: true, type: RES_CLIENT, send: 0x01d0, delay: 2000, inField: null, outField:'sourceId', useMine: true, data: {entity: 3}}, 
-//				{cheat: true, type: RES_CLIENT, send: 0x01d0, delay: 3000, inField: null, outField:'sourceId', useMine: true, data: {entity: 2}}, 
-//				{cheat: true, type: RES_CLIENT, send: 0x01d0, delay: 4000, inField: null, outField:'sourceId', useMine: true, data: {entity: 1}}, 
-//				{cheat: true, type: RES_CLIENT, send: 0x01d0, delay: 5000, inField: null, outField:'sourceId', useMine: true, data: {entity: 0}}, // remove spirit spheres on cooldown end
-//				{cheat: true, type: RES_CLIENT, send: 0x010c, delay: 5000, inField: null, outField:'ID', useMine: true, data: {}}, // play MVP effect
+//				{cheat: true, type: RES_CLIENT, send: 0x01d0, delay: 0, inField: null, myField:'sourceId', useMine: true, data: {entity: 5}}, 
+//				{cheat: true, type: RES_CLIENT, send: 0x01d0, delay: 1000, inField: null, myField:'sourceId', useMine: true, data: {entity: 4}}, 
+//				{cheat: true, type: RES_CLIENT, send: 0x01d0, delay: 2000, inField: null, myField:'sourceId', useMine: true, data: {entity: 3}}, 
+//				{cheat: true, type: RES_CLIENT, send: 0x01d0, delay: 3000, inField: null, myField:'sourceId', useMine: true, data: {entity: 2}}, 
+//				{cheat: true, type: RES_CLIENT, send: 0x01d0, delay: 4000, inField: null, myField:'sourceId', useMine: true, data: {entity: 1}}, 
+//				{cheat: true, type: RES_CLIENT, send: 0x01d0, delay: 5000, inField: null, myField:'sourceId', useMine: true, data: {entity: 0}}, // remove spirit spheres on cooldown end
+//				{cheat: true, type: RES_CLIENT, send: 0x010c, delay: 5000, inField: null, myField:'ID', useMine: true, data: {}}, // play MVP effect
 //			],
 //		},
 	],
@@ -451,7 +477,7 @@ var RECVMOD = {
 		{
 			filter: {
 				skillId: function(x){ 
-					var dropSkills = new Set([28, 46, 214, 249, 356, 476, 1005, 405]);
+					var dropSkills = new Set([28, 46, 214, 249, 356, 476, 1005]);
 					return dropSkills.has(x);
 				},
 				wait: function(x){ return x < 1;}
@@ -508,8 +534,8 @@ var RECVMOD = {
 			filter: {skillId: 51}, // cast Hide
 			useAccount: {field: 'sourceId', useMine: true}, // make sure this field is my own account
 			response: [
-				//{cheat: true, type: RES_CLIENT, send: 0x01d0, delay: 0, inField: null, outField:'sourceId', useMine: true, data: {entity: 5}}, 
-				{cheat: true, type: RES_CLIENT, send: 0x043f, delay: 0, inField: null, outField:'ID', useMine: true, data: {type: 184, tick: 10000, flag: 1, unknown1: 1, unknown2: 0, unknown3: 0}}, // add maya purple
+				//{cheat: true, type: RES_CLIENT, send: 0x01d0, delay: 0, inField: null, myField:'sourceId', useMine: true, data: {entity: 5}}, 
+				{cheat: true, type: RES_CLIENT, send: 0x043f, delay: 0, inField: null, myField:'ID', useMine: true, data: {type: 184, tick: 10000, flag: 1, unknown1: 1, unknown2: 0, unknown3: 0}}, // add maya purple
 			],
 		},
 //		{
@@ -558,7 +584,7 @@ var RECVMOD = {
 //			filter: {type: 2}, // Hallucination effect? Transformation scroll?
 //			useAccount: {field: 'sourceId', useMine: true}, // make sure this field is my own account
 //			response: [
-//				{cheat: true, type: RES_SERVER, send: 0x0089, delay: 0, inField: null, outField:'sourceId', useMine: true, data: {ID: 0, type: 3}}, 
+//				{cheat: true, type: RES_SERVER, send: 0x0089, delay: 0, inField: null, myField:'sourceId', useMine: true, data: {ID: 0, type: 3}}, 
 //			],
 //		},
 //	],

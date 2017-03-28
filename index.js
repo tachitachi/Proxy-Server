@@ -1309,18 +1309,18 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 					// Create a deep copy to not modify the original
 					var modifiedResponse = JSON.parse(JSON.stringify(response));
 					// TODO: finish adding the inField case
-					if(modifiedResponse.useMine !== undefined && modifiedResponse.outField !== undefined && modifiedResponse.useMine){
-						if(typeof(modifiedResponse.outField) === 'string'){
-							modifiedResponse.data[modifiedResponse.outField] = accountInfo.accountId;
+					if(modifiedResponse.useMine !== undefined && modifiedResponse.myField !== undefined && modifiedResponse.useMine){
+						if(typeof(modifiedResponse.myField) === 'string'){
+							modifiedResponse.data[modifiedResponse.myField] = accountInfo.accountId;
 						}
 						else{
-							for(var i = 0; i < modifiedResponse.outField.length; i++){
-								var fieldName = modifiedResponse.outField[i];
+							for(var i = 0; i < modifiedResponse.myField.length; i++){
+								var fieldName = modifiedResponse.myField[i];
 								modifiedResponse.data[fieldName] = accountInfo.accountId;
 							}
 						}
 					}
-					else if(modifiedResponse.useMine !== undefined && !modifiedResponse.useMine && modifiedResponse.inField !== undefined && modifiedResponse.inField !== undefined){
+					if(modifiedResponse.inField !== undefined && modifiedResponse.outField !== undefined){
 						//var inFieldData = response.data[modifiedResponse.inField]
 						
 						var inFieldData = packet.data[RECV[packet.header].datamap[modifiedResponse.inField].index].value;
@@ -1355,18 +1355,18 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 					// Create a deep copy to not modify the original
 					var modifiedResponse = JSON.parse(JSON.stringify(response));
 					// TODO: finish adding the inField case
-					if(modifiedResponse.useMine !== undefined && modifiedResponse.outField !== undefined && modifiedResponse.useMine){
-						if(typeof(modifiedResponse.outField) === 'string'){
-							modifiedResponse.data[modifiedResponse.outField] = accountInfo.accountId;
+					if(modifiedResponse.useMine !== undefined && modifiedResponse.myField !== undefined && modifiedResponse.useMine){
+						if(typeof(modifiedResponse.myField) === 'string'){
+							modifiedResponse.data[modifiedResponse.myField] = accountInfo.accountId;
 						}
 						else{
-							for(var i = 0; i < modifiedResponse.outField.length; i++){
-								var fieldName = modifiedResponse.outField[i];
+							for(var i = 0; i < modifiedResponse.myField.length; i++){
+								var fieldName = modifiedResponse.myField[i];
 								modifiedResponse.data[fieldName] = accountInfo.accountId;
 							}
 						}
 					}
-					else if(modifiedResponse.useMine !== undefined && !modifiedResponse.useMine && modifiedResponse.inField !== undefined && modifiedResponse.inField !== undefined){
+					if(modifiedResponse.inField !== undefined && modifiedResponse.outField !== undefined){
 						//var inFieldData = response.data[modifiedResponse.inField]
 						
 						var inFieldData = packet.data[RECV[packet.header].datamap[modifiedResponse.inField].index].value;
