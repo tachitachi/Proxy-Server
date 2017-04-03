@@ -220,7 +220,7 @@
 		});
 		
 		socket.on('GetAccountInfo', function(message){
-			//console.log(data);
+			console.log(data);
 			
 			var data = message.accountInfo;
 			var inspiration = message.inspirationInfo;
@@ -585,6 +585,7 @@
 		}
 		
 		function GetAccountInfo(accountId){
+            console.log('getting account info for', accountId);
 			socket.emit('GetAccountInfo', {accountId: accountId});
 		}
 		

@@ -1994,12 +1994,20 @@ var RECV = {
 		],
 	},
 	0x014c: {
-		name: 'unknown_packet_014c', 
+		name: 'guild_allies_enemies_list', 
 		length: -1, 
 		log: 2,
 		data: [
 			{name: 'len', size: 2, type: 'int', log: 2},
-			{name: 'data', size: -1, type: 'byte', log: 1},
+			{name: 'guildInfo', size: -1, type: 'array', log: 2, struct: {
+					size: 32,
+					data: [
+						{name: 'type', size: 4, type: 'int', log: 1},
+						{name: 'guildId', size: 4, type: 'int', log: 2},
+						{name: 'name', size: 24, type: 'string', log: 1},
+					]
+				}
+			}, //(index itemId type amount wear_state card1 card2 card3 card4 expiration flags)(v v C v a4 v4 V C)
 		],
 	},
 	0x014d: {
@@ -2467,19 +2475,22 @@ var RECV = {
 		],
 	},
 	0x0184: {
-		name: 'unknown_packet_0184', 
+		name: 'guild_unally', 
 		length: 10, 
 		log: 2,
 		data: [
-			{name: 'data', size: 8, type: 'byte', log: 1},
+			{name: 'guildId', size: 4, type: 'int', log: 1},
+			{name: 'type', size: 4, type: 'int', log: 1},
 		],
 	},
 	0x0185: {
-		name: 'unknown_packet_0185', 
+		name: 'guild_alliance_set', 
 		length: 34, 
 		log: 2,
 		data: [
-			{name: 'data', size: 32, type: 'byte', log: 1},
+			{name: 'type', size: 4, type: 'int', log: 1},
+			{name: 'guildId', size: 4, type: 'int', log: 1},
+			{name: 'name', size: 24, type: 'string', log: 1},
 		],
 	},
 	0x0187: {

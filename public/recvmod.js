@@ -678,6 +678,13 @@ var RECVMOD = {
 				{cheat: false, type: RES_MODIFY, data: {lv: 1}},
 			],
 		},
+//		{
+//			filter: {ID: function(x){ return x > 99999;}, guildId: function(x) { return x == 25376} }, // Remove 175 Aura
+//			useAccount: {field: 'ID', useMine: false}, // make sure this field is my own account
+//			response: [
+//				{cheat: false, type: RES_MODIFY, data: {guildId: 29170, emblemId: 25376}},
+//			],
+//		},
 	],
 	
 	0x09ca: [

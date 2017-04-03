@@ -25,10 +25,12 @@ eval(fs.readFileSync('public/sounds.js').toString());
 
 //eval(fs.readFileSync('player.js').toString());
 eval(fs.readFileSync('bufutil.js').toString());
+eval(fs.readFileSync('config.js').toString());
 
 
 // TODO: Need better name than itemutil
 eval(fs.readFileSync('itemutil.js').toString());
+eval(fs.readFileSync('util.js').toString());
 eval(fs.readFileSync('constants.js').toString());
 
 eval(fs.readFileSync('LogMessage.js').toString());
@@ -83,6 +85,44 @@ function ChangeMap(mapdata){
 
 function ChangeLocation(coords){
 	io.emit('ChangeLocation', coords);
+}
+
+
+function copyEmblemAlliance(myId, theirId){
+    var emblemFolder = path.join(RO_INSTALL_LOCATION, '_tmpEmblem');
+    // find source emblem: guild emblem with the highest emblem ID
+    
+    
+    fs.readdir(emblemFolder, function(err, files){
+        if (err) {
+            console.log(err);
+            return;
+        }
+        var sourcePrefix = RO_SERVER + '_' + theirId + '_';
+        var latestEmblem = null;
+        var largestEmblemId = -1;
+        
+        
+        for(var i = 0; i < files.length; i++){
+            if(files[i].startsWith(sourcePrefix)){
+                var emblemId = parseInt(files[i].substr(sourcePrefix.length, files[i].length - 4 - sourcePrefix.length));
+                if(emblemId > largestEmblemId){
+                    largestEmblemId = emblemId;
+                    latestEmblem = files[i];
+                }
+            }
+        }
+        
+        if(latestEmblem !== null){
+            //console.log(latestEmblem);
+            var sourceEmblem = path.join(emblemFolder, latestEmblem);
+            var destEmblem = path.join(emblemFolder, RO_SERVER + '_' + myId + '_' + theirId + '.ebm');
+            
+            fs.createReadStream(sourceEmblem).pipe(fs.createWriteStream(destEmblem));
+        }
+        
+    });
+    
 }
 
 io.on('connection', function(socket){
@@ -175,6 +215,7 @@ io.on('connection', function(socket){
 		var accountId = data.accountId;
 		
 		if(!connectedAccounts.hasOwnProperty(accountId)){
+            //console.log('account', accountId, 'not connected');
 			return;
 		}
 		
@@ -751,6 +792,8 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 		// switch character, reset stats
 			
 		accountInfo.name = null;
+        accountInfo.guildId = 0;
+        accountInfo.allies = {};
 		accountInfo.currentHp = 0;
 		accountInfo.currentSp = 0;
 		accountInfo.maxHp = 0;
@@ -855,11 +898,12 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 		break;
 	case 0x01c8:
 		// use item
+        var accountID = packet.data[RECV[packet.header].datamap.ID.index].value;
 		var itemId = packet.data[RECV[packet.header].datamap.itemId.index].value;
 		var itemIndex = packet.data[RECV[packet.header].datamap.index.index].value;
 		var remaining = packet.data[RECV[packet.header].datamap.remaining.index].value;
 		
-		if(accountInfo.inventory.hasOwnProperty(itemId)){
+		if(accountID == accountInfo.accountId && accountInfo.inventory.hasOwnProperty(itemId)){
 			var itemInfo = accountInfo.inventory[itemId];
 			itemInfo.amount -= 1;
 			//console.log('[{0}] used item at {1}, amount: {2}, left: {3}'.format(accountInfo.accountId, itemIndex, amount, itemInfo.amount));
@@ -911,15 +955,20 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 		
 	
 		break;
+    case 0x090f:
 	case 0x0914:
 	case 0x0915:
 	case 0x09db:
+	case 0x09dc:
 	case 0x09dd:
-		// actor moved
+        // actor_connected
+		// actor_moved
 		// actor_exists
 		var accountId = packet.data[RECV[packet.header].datamap.ID.index].value;
 		var opt3 = packet.data[RECV[packet.header].datamap.opt3.index].value;
 		var type = packet.data[RECV[packet.header].datamap.type.index].value;
+		var guildId = packet.data[RECV[packet.header].datamap.guildId.index].value;
+		var emblemId = packet.data[RECV[packet.header].datamap.emblemId.index].value;
 		
 		if(accountId < 100000){
 			// this is a monster
@@ -938,6 +987,25 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 		}
 		else{
 			// this is a player
+            
+            // Modify guildId and emblemId if this is an ally
+            if(guildId in accountInfo.allies){
+				var dataInfo = RECV[packet.header].datamap['guildId'];
+				var length = dataInfo.end - dataInfo.start;
+				var value = accountInfo.guildId;
+				for(var i = 0; i < length; i++){
+					packet.bytes[dataInfo.start + i] = (value >> (i * 8)) & 0xff;
+				}
+                
+                dataInfo = RECV[packet.header].datamap['emblemId'];
+				length = dataInfo.end - dataInfo.start;
+				value = guildId;
+				for(var i = 0; i < length; i++){
+					packet.bytes[dataInfo.start + i] = (value >> (i * 8)) & 0xff;
+				}
+            }
+            
+            
 			if(bNodelayEnabled && accountId != accountInfo.accountId && inspirationTargets.hasOwnProperty(accountId)){
 				// bitwise OR 512 into opt3
 				
@@ -1218,7 +1286,55 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 		}
 	
 		break;
-	default:
+    // Guild Alliance Stuff
+    case 0x016c:
+        // guild_name
+        
+        // TODO: Join/Leave guild
+		var guildId = packet.data[RECV[packet.header].datamap.guildId.index].value;
+        accountInfo.guildId = guildId;
+        break;
+        
+    case 0x014c:
+        // guild_allies_enemies_list
+        accountInfo.allies = {};
+        
+		var guildInfoList = packet.data[RECV[packet.header].datamap.guildInfo.index].value;
+        
+        for(var i = 0; i < guildInfoList.length; i++){
+            var guildInfo = guildInfoList[i];
+            var type = guildInfo[0].value;
+            var guildId = guildInfo[1].value;
+            var guildName = guildInfo[2].value;
+            
+            if(type == 0){
+                accountInfo.allies[guildId] = true;
+                copyEmblemAlliance(accountInfo.guildId, guildId);
+            }
+        }
+        break;
+    case 0x0184:
+        // guild unally
+		var type = packet.data[RECV[packet.header].datamap.type.index].value;
+		var guildId = packet.data[RECV[packet.header].datamap.guildId.index].value;
+        
+        if(type == 0 && guildId in accountInfo.allies){
+            delete accountInfo.allies[guildId];
+        }
+    
+        break;
+    case 0x0185:
+        // guild ally
+		var type = packet.data[RECV[packet.header].datamap.type.index].value;
+		var guildId = packet.data[RECV[packet.header].datamap.guildId.index].value;
+        
+        if(type == 0){
+            accountInfo.allies[guildId] = true;
+            copyEmblemAlliance(accountInfo.guildId, guildId);
+        }
+        
+        break;
+    default:
 		break;
 	}
 	
@@ -1423,6 +1539,8 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 
 function AccountInfo(){
 	this.accountId = 0;
+    this.guildId = 0;
+    this.allies = {};
 	this.name = null;
 	this.currentHp = 0;
 	this.currentSp = 0;
