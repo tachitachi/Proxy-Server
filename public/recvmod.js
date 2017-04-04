@@ -4,6 +4,8 @@ var RES_CLIENT = 2;
 var RES_SERVER = 3;
 var RES_SPEECH = 4;
 
+var homunIds = new Set([6001, 6009, 6002, 6010, 6003, 6011, 6004, 6012, 6005, 6013, 6006, 6014, 6007, 6015, 6008, 6016, 6017, 6018, 6019, 6020, 6021, 6048, 6049, 6050, 6051, 6052, 2114, 2116, 2117, 2118, 2119, 2120, 2121, 2122, 2123, 2124, 2125]);
+
 var RECVMOD = {
 	// on packet recv:
 	// respond with 1 or more of:
@@ -607,6 +609,16 @@ var RECVMOD = {
 				{cheat: false, type: RES_MODIFY, data: {lv: 1}},
 			],
 		},
+		{
+			filter: {ID: function(x){ return x <= 99999;}, type: function(x) { 
+                return homunIds.has(x);
+            } }, // Remove Homunculus
+			useAccount: {field: null, useMine: false}, // make sure this field is my own account
+			response: [
+				{cheat: false, type: RES_DROP},
+				//{cheat: false, type: RES_SPEECH, delay: 0, data: {msg: 'hide'}},
+			],
+		},
 	],
 	
 	0x0914: [
@@ -615,6 +627,16 @@ var RECVMOD = {
 			useAccount: {field: null, useMine: false}, // make sure this field is my own account
 			response: [
 				{cheat: false, type: RES_MODIFY, data: {lv: 1}},
+			],
+		},
+		{
+			filter: {ID: function(x){ return x <= 99999;}, type: function(x) { 
+                return homunIds.has(x);
+            } }, // Remove Homunculus
+			useAccount: {field: null, useMine: false}, // make sure this field is my own account
+			response: [
+				{cheat: false, type: RES_DROP},
+				//{cheat: false, type: RES_SPEECH, delay: 0, data: {msg: 'hide'}},
 			],
 		},
 		//{
@@ -642,6 +664,16 @@ var RECVMOD = {
 				{cheat: false, type: RES_MODIFY, data: {lv: 1}},
 			],
 		},
+		{
+			filter: {ID: function(x){ return x <= 99999;}, type: function(x) { 
+                return homunIds.has(x);
+            } }, // Remove Homunculus
+			useAccount: {field: null, useMine: false}, // make sure this field is my own account
+			response: [
+				{cheat: false, type: RES_DROP},
+				//{cheat: false, type: RES_SPEECH, delay: 0, data: {msg: 'hide'}},
+			],
+		},
 //		{
 //			filter: {ID: function(x){ return x < 100000;}, cheat: true, type: 1007}, // change fabre to randgris
 //			useAccount: {field: null, useMine: false}, // make sure this field is my own account
@@ -659,6 +691,16 @@ var RECVMOD = {
 				{cheat: false, type: RES_MODIFY, data: {lv: 1}},
 			],
 		},
+		{
+			filter: {ID: function(x){ return x <= 99999;}, type: function(x) { 
+                return homunIds.has(x);
+            } }, // Remove Homunculus
+			useAccount: {field: null, useMine: false}, // make sure this field is my own account
+			response: [
+				{cheat: false, type: RES_DROP},
+				//{cheat: false, type: RES_SPEECH, delay: 0, data: {msg: 'hide'}},
+			],
+		},
 	],
 	0x09dc: [
 		{
@@ -666,6 +708,16 @@ var RECVMOD = {
 			useAccount: {field: null, useMine: false}, // make sure this field is my own account
 			response: [
 				{cheat: false, type: RES_MODIFY, data: {lv: 1}},
+			],
+		},
+		{
+			filter: {ID: function(x){ return x <= 99999;}, type: function(x) { 
+                return homunIds.has(x);
+            } }, // Remove Homunculus
+			useAccount: {field: null, useMine: false}, // make sure this field is my own account
+			response: [
+				{cheat: false, type: RES_DROP},
+				//{cheat: false, type: RES_SPEECH, delay: 0, data: {msg: 'hide'}},
 			],
 		},
 	],
@@ -678,13 +730,16 @@ var RECVMOD = {
 				{cheat: false, type: RES_MODIFY, data: {lv: 1}},
 			],
 		},
-//		{
-//			filter: {ID: function(x){ return x > 99999;}, guildId: function(x) { return x == 25376} }, // Remove 175 Aura
-//			useAccount: {field: 'ID', useMine: false}, // make sure this field is my own account
-//			response: [
-//				{cheat: false, type: RES_MODIFY, data: {guildId: 29170, emblemId: 25376}},
-//			],
-//		},
+		{
+			filter: {ID: function(x){ return x <= 99999;}, type: function(x) { 
+                return homunIds.has(x);
+            } }, // Remove Homunculus
+			useAccount: {field: null, useMine: false}, // make sure this field is my own account
+			response: [
+				{cheat: false, type: RES_DROP},
+				//{cheat: false, type: RES_SPEECH, delay: 0, data: {msg: 'hide'}},
+			],
+		},
 	],
 	
 	0x09ca: [

@@ -3899,11 +3899,14 @@ var RECV = {
 		],
 	},
 	0x0230: {
-		name: 'unknown_packet_0230', 
+		name: 'homunculus_data', 
 		length: 12, 
 		log: 2,
 		data: [
-			{name: 'data', size: 10, type: 'byte', log: 1},
+			{name: 'unused', size: 1, type: 'int', log: 1},
+			{name: 'state', size: 1, type: 'int', log: 1},
+			{name: 'ID', size: 4, type: 'int', log: 1},
+			{name: 'data', size: 4, type: 'byte', log: 1},
 		],
 	},
 	0x0231: {
@@ -9372,7 +9375,7 @@ var RECV = {
 		log: 2,
 		data: [
 			{name: 'len', size: 2, type: 'int', log: 1},
-			{name: 'object_type', size: 1, type: 'byte', log: 1},
+			{name: 'object_type', size: 1, type: 'int', log: 1},
 			{name: 'ID', size: 4, type: 'int', log: 2},
 			{name: 'unknown1', size: 4, type: 'byte', log: 1},
 			{name: 'walk_speed', size: 2, type: 'int', log: 1},
