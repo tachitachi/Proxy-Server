@@ -1873,11 +1873,18 @@ var RECV = {
 		],
 	},
 	0x013e: {
-		name: 'unknown_packet_013e', 
+		name: 'skill_cast_013e', 
 		length: 24, 
 		log: 2,
 		data: [
-			{name: 'data', size: 22, type: 'byte', log: 1},
+			{name: 'sourceId', size: 4, type: 'int', log: 2},
+			{name: 'targetId', size: 4, type: 'int', log: 2},
+			{name: 'x', size: 2, type: 'int', log: 2},
+			{name: 'y', size: 2, type: 'int', log: 2},
+			{name: 'skillId', size: 2, type: 'int', log: 2},
+			{name: 'unknown', size: 2, type: 'byte', log: 2},
+			{name: 'type', size: 2, type: 'int', log: 2},
+			{name: 'wait', size: 4, type: 'int', log: 2},
 		],
 	},
 	0x013f: {
@@ -5217,11 +5224,19 @@ var RECV = {
 		],
 	},
 	0x02e1: {
-		name: 'unknown_packet_02e1', 
+		name: 'actor_action_02e1', 
 		length: 33, 
 		log: 2,
 		data: [
-			{name: 'data', size: 31, type: 'byte', log: 1},
+			{name: 'sourceId', size: 4, type: 'int', log: 2},
+			{name: 'targetId', size: 4, type: 'int', log: 2},
+			{name: 'tick', size: 4, type: 'int', log: 1},
+			{name: 'source_speed', size: 4, type: 'int', log: 2},
+			{name: 'dst_speed', size: 4, type: 'int', log: 2},
+			{name: 'damage', size: 4, type: 'int', log: 2},
+			{name: 'div', size: 2, type: 'int', log: 1},
+			{name: 'type', size: 1, type: 'int', log: 1},
+			{name: 'dual_wield_damage', size: 4, type: 'int', log: 1},
 		],
 	},
 	0x02e2: {
@@ -5992,7 +6007,7 @@ var RECV = {
 		],
 	},
 	0x07fb: {
-		name: 'skill_cast', 
+		name: 'skill_cast_07fb', 
 		length: 25, 
 		log: 2,
 		data: [
@@ -7605,8 +7620,8 @@ var RECV = {
 			{name: 'tick', size: 4, type: 'int', log: 1},
 			{name: 'source_speed', size: 4, type: 'int', log: 2},
 			{name: 'dst_speed', size: 4, type: 'int', log: 2},
-			{name: 'damage', size: 4, type: 'byte', log: 2},
-			{name: 'nullbyte', size: 1, type: 'byte', log: 0},
+			{name: 'damage', size: 4, type: 'int', log: 2},
+			{name: 'spDamaged', size: 1, type: 'int', log: 0},
 			{name: 'div', size: 2, type: 'int', log: 1},
 			{name: 'type', size: 1, type: 'int', log: 1},
 			{name: 'dual_wield_damage', size: 4, type: 'int', log: 1},
