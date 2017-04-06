@@ -130,11 +130,29 @@ var RECVMOD = {
 			filter: { skillId: 5029 }, // cast SV Root
 			useAccount: {field: 'sourceId', useMine: true}, // make sure this field is my own account
 			response: [
-				{cheat: false, type: RES_DROP},
+				//{cheat: false, type: RES_DROP},
 				{cheat: false, type: RES_CLIENT, send: 0x01de, delay: 0, inField: 'targetId', outField: 'targetId', myField:'sourceId', useMine: true, data: {skillId: 5029, src_speed: 100, dst_speed: 1, damage: -100, level: 1, option: 0, type: 8}},
                 //[Skill: Unknown Skill 5033] [sourceId: 3802723] [targetId: 56093] [tick: 289136454] [src_speed: 270] [dst_speed: 1] [damage: 0] [level: 5] [option: 5] [type: 8]
 			],
 		},
+		{
+			filter: { skillId: 5032 }, // cast Scar of Tarou
+			useAccount: {field: 'sourceId', useMine: true}, // make sure this field is my own account
+			response: [
+				//{cheat: false, type: RES_DROP},
+				{cheat: false, type: RES_CLIENT, send: 0x01de, delay: 0, inField: 'targetId', outField: 'targetId', myField:'sourceId', useMine: true, data: {skillId: 5032, src_speed: 100, dst_speed: 1, damage: -100, level: 1, option: 0, type: 8}},
+                //[Skill: Unknown Skill 5033] [sourceId: 3802723] [targetId: 56093] [tick: 289136454] [src_speed: 270] [dst_speed: 1] [damage: 0] [level: 5] [option: 5] [type: 8]
+			],
+		},
+//		{
+//			filter: { skillId: 5035 }, // cast Arclouze Dash
+//			useAccount: {field: 'sourceId', useMine: true}, // make sure this field is my own account
+//			response: [
+//				//{cheat: false, type: RES_DROP},
+//				{cheat: false, type: RES_CLIENT, send: 0x01de, delay: 0, inField: 'targetId', outField: 'targetId', myField:'sourceId', useMine: true, data: {skillId: 5035, src_speed: 100, dst_speed: 1, damage: -100, level: 1, option: 0, type: 8}},
+//                //[Skill: Unknown Skill 5033] [sourceId: 3802723] [targetId: 56093] [tick: 289136454] [src_speed: 270] [dst_speed: 1] [damage: 0] [level: 5] [option: 5] [type: 8]
+//			],
+//		},
 //		{
 //			filter: { skillId: 405 }, // cast Fiber Lock
 //			useAccount: {field: 'sourceId', useMine: true}, // make sure this field is my own account
