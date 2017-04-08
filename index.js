@@ -1573,7 +1573,7 @@ function AccountInfo(){
 
 var connectionId = 0;
  
-function CreateRequest(host)
+function CreateRequest(host, port)
 {
 	function onRequest(proxySocket) {
 		var myConnectionId = connectionId++;
@@ -1584,9 +1584,9 @@ function CreateRequest(host)
 		var PACKET_RECV_BUFFER = new PacketBuffer(RECV, 1);
 		var PACKET_SEND_BUFFER = new PacketBuffer(SEND, 1);
 		
-		serviceSocket.connect(parseInt(servicePort), host, function() {
+		serviceSocket.connect(parseInt(port), host, function() {
 			connected = true;
-			console.log('  ** connect **', host);
+			console.log('  ** connect **', host, port);
 			proxySocket.write(new Buffer([0x00, 0x5a, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]));
 			if (buffers.length > 0) {
 				for (i = 0; i < buffers.length; i++) {
@@ -1607,7 +1607,7 @@ function CreateRequest(host)
 		serviceSocket.on("error", function (e) {
 			console.log('service error', e);
 			console.log("Could not connect to service at host "
-			+ host + ', port ' + servicePort);
+			+ host + ', port ' + port);
 			proxySocket.end();
 		});
 		proxySocket.on("data", function (data) {
@@ -1814,27 +1814,28 @@ function LogDebug(ID, message){
 	}
 }
  
-net.createServer(CreateRequest('128.241.92.100')).listen(4500);
-net.createServer(CreateRequest('128.241.92.101')).listen(4501);
-net.createServer(CreateRequest('128.241.92.102')).listen(4502);
-net.createServer(CreateRequest('128.241.92.103')).listen(4503);
-net.createServer(CreateRequest('128.241.92.104')).listen(4504);
-net.createServer(CreateRequest('128.241.92.105')).listen(4505);
-net.createServer(CreateRequest('128.241.92.106')).listen(4506);
-net.createServer(CreateRequest('128.241.92.107')).listen(4507);
-net.createServer(CreateRequest('128.241.92.108')).listen(4508);
-net.createServer(CreateRequest('128.241.92.109')).listen(4509);
-net.createServer(CreateRequest('128.241.92.110')).listen(4510);
-net.createServer(CreateRequest('128.241.92.111')).listen(4511);
-net.createServer(CreateRequest('128.241.92.112')).listen(4512);
-net.createServer(CreateRequest('128.241.92.113')).listen(4513);
-net.createServer(CreateRequest('128.241.92.114')).listen(4514);
-net.createServer(CreateRequest('128.241.92.115')).listen(4515);
-net.createServer(CreateRequest('128.241.92.116')).listen(4516);
-net.createServer(CreateRequest('128.241.92.117')).listen(4517);
-net.createServer(CreateRequest('128.241.92.118')).listen(4518);
-net.createServer(CreateRequest('128.241.92.119')).listen(4519);
-net.createServer(CreateRequest('128.241.92.120')).listen(4520);
+//net.createServer(CreateRequest('128.241.92.100')).listen(4500);
+net.createServer(CreateRequest('128.241.92.99', 4501)).listen(4501);
+net.createServer(CreateRequest('128.241.92.99', 4502)).listen(4502);
+net.createServer(CreateRequest('128.241.92.99', 4503)).listen(4503);
+net.createServer(CreateRequest('128.241.92.99', 4504)).listen(4504);
+net.createServer(CreateRequest('128.241.92.99', 4505)).listen(4505);
+net.createServer(CreateRequest('128.241.92.99', 4506)).listen(4506);
+net.createServer(CreateRequest('128.241.92.99', 4507)).listen(4507);
+net.createServer(CreateRequest('128.241.92.99', 4508)).listen(4508);
+net.createServer(CreateRequest('128.241.92.99', 4509)).listen(4509);
+net.createServer(CreateRequest('128.241.92.99', 4510)).listen(4510);
+net.createServer(CreateRequest('128.241.92.122', 4501)).listen(4511);
+net.createServer(CreateRequest('128.241.92.122', 4502)).listen(4512);
+net.createServer(CreateRequest('128.241.92.122', 4503)).listen(4513);
+net.createServer(CreateRequest('128.241.92.122', 4504)).listen(4514);
+net.createServer(CreateRequest('128.241.92.122', 4505)).listen(4515);
+net.createServer(CreateRequest('128.241.92.122', 4506)).listen(4516);
+net.createServer(CreateRequest('128.241.92.122', 4507)).listen(4517);
+net.createServer(CreateRequest('128.241.92.122', 4508)).listen(4518);
+net.createServer(CreateRequest('128.241.92.122', 4509)).listen(4519);
+net.createServer(CreateRequest('128.241.92.122', 4510)).listen(4520);
+
 
 net.createServer(LogRequest()).listen(5555);
 
