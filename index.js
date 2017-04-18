@@ -1814,7 +1814,7 @@ function LogDebug(ID, message){
 	}
 }
  
-//net.createServer(CreateRequest('128.241.92.100')).listen(4500);
+// iRO servers
 net.createServer(CreateRequest('128.241.92.99', 4501)).listen(4501);
 net.createServer(CreateRequest('128.241.92.99', 4502)).listen(4502);
 net.createServer(CreateRequest('128.241.92.99', 4503)).listen(4503);
@@ -1835,6 +1835,9 @@ net.createServer(CreateRequest('128.241.92.122', 4507)).listen(4517);
 net.createServer(CreateRequest('128.241.92.122', 4508)).listen(4518);
 net.createServer(CreateRequest('128.241.92.122', 4509)).listen(4519);
 net.createServer(CreateRequest('128.241.92.122', 4510)).listen(4520);
+
+// NovaRO servers
+net.createServer(CreateRequest('158.69.123.38', 5175)).listen(4521);
 
 
 net.createServer(LogRequest()).listen(5555);

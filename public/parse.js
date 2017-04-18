@@ -234,6 +234,7 @@ function Packet(definition, bytes){
 	else{
 		var packetHeaderString = IntToHexString(this.header, 2);
 		this.data.push({name: 'header', value: packetHeaderString, type: 'int', log: 2});
+		this.data.push({name: 'length', value: this.length, type: 'int', log: 2});
 		this.data.push({name: 'data', value: this.bytes, type: 'byte', log: 1});
 	}
 	

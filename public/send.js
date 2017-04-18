@@ -202,6 +202,15 @@ var SEND = {
 			},
 		],
 	},
+	0x0232: {
+		name: 'actor_move', 
+		length: 9, 
+		log: 2,
+		data: [
+			{name: 'ID', size: 4, type: 'int', log: 2},
+			{name: 'coords', size: 3, type: 'coords', log: 2},
+		],
+	},
 	0x02f1: {
 		name: 'progress_bar', 
 		length: 2, 

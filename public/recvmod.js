@@ -267,7 +267,14 @@ var RECVMOD = {
 			],
 		},
 		{
-			filter: {dst_speed: function(x) { return x > 100; } },
+			filter: {src_speed: function(x) { return x > 100; } },	// speed up anything
+			useAccount: {field: 'sourceId', useMine: true}, // make sure this field is my own account
+			response: [
+				{cheat: false, type: RES_MODIFY, data: {src_speed: 100}}, //  make it 1 hit
+			],
+		},
+		{
+			filter: {dst_speed: function(x) { return x > 100; } }, // when someone uses a skill on me
 			useAccount: {field: 'targetId', useMine: true}, // make sure this field is my own account
 			response: [
 				{cheat: false, type: RES_MODIFY, data: {dst_speed: 100}}, //  speed this up
@@ -513,7 +520,7 @@ var RECVMOD = {
 		{
 			filter: {
 				skillId: function(x){ 
-					var dropSkills = new Set([28, 46, 214, 249, 356, 476, 1005]);
+					var dropSkills = new Set([28, 214, 249, 356, 476, 1005]);
 					return dropSkills.has(x);
 				},
 				wait: function(x){ return x < 1;}
