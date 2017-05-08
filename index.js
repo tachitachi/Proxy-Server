@@ -66,6 +66,8 @@ var LogServer = null;
 
 var connectedAccounts = {};
 var inspirationTargets = {};
+var imukeTargets = {};
+var noshieldTargets = {};
 
 function SendToWeb(name, msg){
 	io.emit(name, msg);
@@ -106,7 +108,7 @@ function copyEmblemAlliance(myId, theirId){
         for(var i = 0; i < files.length; i++){
             if(files[i].startsWith(sourcePrefix)){
                 var emblemId = parseInt(files[i].substr(sourcePrefix.length, files[i].length - 4 - sourcePrefix.length));
-                if(emblemId > largestEmblemId){
+                if(emblemId > largestEmblemId && emblemId < 1000){
                     largestEmblemId = emblemId;
                     latestEmblem = files[i];
                 }
@@ -394,16 +396,19 @@ function HandleSend(packet, accountInfo, proxySocket, serviceSocket){
 		var emoteId = packet.data[SEND[packet.header].datamap.emoteId.index].value;
 		console.log('emoteId', emoteId);
 		
-		if(emoteId === 36){
-			// use force Stand instead, useful when sitting while hidden
-			//var castZenPacket = CreateSendPacketBuffer(0x0113, {lv: 1, skillId: 401, targetId: accountInfo.accountId});
-			var forceStandPacket = CreateSendPacketBuffer(0x0089, {ID: 0, type: 3});
-			var resetEmotePacket = CreateRecvPacketBuffer(0x00c0, {ID: accountInfo.accountId, type: 255});
-			serviceSocket.write(forceStandPacket);
-			proxySocket.write(resetEmotePacket);
-			return false;
+        if(bNodelayEnabled){
+            
+            if(emoteId === 36){
+                // use force Stand instead, useful when sitting while hidden
+                //var castZenPacket = CreateSendPacketBuffer(0x0113, {lv: 1, skillId: 401, targetId: accountInfo.accountId});
+                var forceStandPacket = CreateSendPacketBuffer(0x0089, {ID: 0, type: 3});
+                var resetEmotePacket = CreateRecvPacketBuffer(0x00c0, {ID: accountInfo.accountId, type: 255});
+                serviceSocket.write(forceStandPacket);
+                proxySocket.write(resetEmotePacket);
+                return false;
+            }
+            
 		}
-		
 		
 		
 		break;
@@ -933,8 +938,14 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 						// start a timer to disable inspiration, if I haven't started one for this account already	
 						
 						//console.log('adding to inspiration', accountId, accountInfo.accountId)
+                        
+                        if(bNodelayEnabled){
+                            var startInspirationEffect = CreateRecvPacketBuffer(0x0983, {type: INSPIRATION_EFFECT['clear'], ID: accountId, flag: 1});
+                            proxySocket.write(startInspirationEffect);
+                        }
+                        
 						inspirationTargets[accountId] = setTimeout(_.bind(function(){
-							console.log('deleting inspiration from timer', this.accountId);
+							//console.log('deleting inspiration from timer', this.accountId);
 							delete inspirationTargets[this.accountId];
 						}, {accountId: accountId}), 90000);
 					}
@@ -946,7 +957,7 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 					//96 01 7b 00 f3 3a 10 00 00
 					
 					if(bNodelayEnabled){
-						var endInspirationEffect = CreateRecvPacketBuffer(0x0196, {type: 123, ID: accountId, flag: 0});
+						var endInspirationEffect = CreateRecvPacketBuffer(0x0196, {type: INSPIRATION_EFFECT['clear'], ID: accountId, flag: 0});
 						proxySocket.write(endInspirationEffect);
 					}
 				}
@@ -955,6 +966,91 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 		
 	
 		break;
+    case 0x01d7:
+        // player_equipment
+        //console.log(packet);
+        
+		var accountId = packet.data[RECV[packet.header].datamap.sourceId.index].value;
+		var ID1 = packet.data[RECV[packet.header].datamap.ID1.index].value;
+		var ID2 = packet.data[RECV[packet.header].datamap.ID2.index].value;
+        
+        if(accountId !== accountInfo.accountId){
+            // If no shield, turn them red
+            
+            //console.log('equipping items', ID1, ID2);
+            
+            // No shield
+            if(ID1 == 0 || ID2 == 0){
+                
+                if(bNodelayEnabled){
+                    var startNoshieldEffect = CreateRecvPacketBuffer(0x0983, {type: NOSHIELD_EFFECT['clear'], ID: accountId, flag: 1});
+                    proxySocket.write(startNoshieldEffect);
+                }
+                
+                noshieldTargets[accountId] = setTimeout(_.bind(function(){
+                    //console.log('deleting no shield from timer', this.accountId);
+                    delete noshieldTargets[this.accountId];
+                }, {accountId: accountId}), 5000); 
+                
+                // clear imuke
+                clearTimeout(imukeTargets[accountId]);
+                delete imukeTargets[accountId];
+                //96 01 7b 00 f3 3a 10 00 00
+                
+                if(bNodelayEnabled){
+                    var endImukeEffect = CreateRecvPacketBuffer(0x0196, {type: IMUKE_EFFECT['clear'], ID: accountId, flag: 0});
+                    proxySocket.write(endImukeEffect);
+                }
+            }
+            else if(ID2 != 28910){
+                //console.log('imuke unequipped');
+                
+                // clear imuke
+                clearTimeout(imukeTargets[accountId]);
+                delete imukeTargets[accountId];
+                
+                
+                if(bNodelayEnabled){
+                    var endImukeEffect = CreateRecvPacketBuffer(0x0196, {type: IMUKE_EFFECT['clear'], ID: accountId, flag: 0});
+                    proxySocket.write(endImukeEffect);
+                }
+                
+                // clear noshield
+                clearTimeout(noshieldTargets[accountId]);
+                delete noshieldTargets[accountId];
+                
+                if(bNodelayEnabled){
+                    var endNoshieldEffect = CreateRecvPacketBuffer(0x0196, {type: NOSHIELD_EFFECT['clear'], ID: accountId, flag: 0});
+                    proxySocket.write(endNoshieldEffect);
+                }
+            }
+            // If target put on an imuke shield
+            else if(ID2 == 28910){
+                
+                if(bNodelayEnabled){
+                    var startImukeEffect = CreateRecvPacketBuffer(0x0983, {type: IMUKE_EFFECT['clear'], ID: accountId, flag: 1});
+                    proxySocket.write(startImukeEffect);
+                }
+                
+               imukeTargets[accountId] = setTimeout(_.bind(function(){
+                    //console.log('deleting no shield from timer', this.accountId);
+                    delete imukeTargets[this.accountId];
+                }, {accountId: accountId}), 5000); 
+                
+                // clear noshield
+                clearTimeout(noshieldTargets[accountId]);
+                delete noshieldTargets[accountId];
+                
+                if(bNodelayEnabled){
+                    var endNoshieldEffect = CreateRecvPacketBuffer(0x0196, {type: NOSHIELD_EFFECT['clear'], ID: accountId, flag: 0});
+                    proxySocket.write(endNoshieldEffect);
+                }
+                
+            }
+            
+        }
+        
+        break;
     case 0x090f:
 	case 0x0914:
 	case 0x0915:
@@ -969,6 +1065,8 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 		var type = packet.data[RECV[packet.header].datamap.type.index].value;
 		var guildId = packet.data[RECV[packet.header].datamap.guildId.index].value;
 		var emblemId = packet.data[RECV[packet.header].datamap.emblemId.index].value;
+		var weapon = packet.data[RECV[packet.header].datamap.weapon.index].value;
+		var shield = packet.data[RECV[packet.header].datamap.shield.index].value;
 		
 		if(accountId < 100000){
 			// this is a monster
@@ -1005,19 +1103,103 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 				}
             }
             
+            if(weapon == 0 || shield == 0){
+                // clear imuke
+                clearTimeout(imukeTargets[accountId]);
+                delete imukeTargets[accountId];
+                
+                if(bNodelayEnabled){
+                    var endImukeEffect = CreateRecvPacketBuffer(0x0196, {type: IMUKE_EFFECT['clear'], ID: accountId, flag: 0});
+                    proxySocket.write(endImukeEffect);
+                }
+                
+                // reset noshield
+                clearTimeout(noshieldTargets[accountId]);
+                noshieldTargets[accountId] = setTimeout(_.bind(function(){
+                    //console.log('deleting no shield from timer', this.accountId);
+                    delete noshieldTargets[this.accountId];
+                }, {accountId: accountId}), 5000); 
+            }
+            else if(shield == 28910){
+                // reset imuke
+                clearTimeout(imukeTargets[accountId]);
+                imukeTargets[accountId] = setTimeout(_.bind(function(){
+                    //console.log('deleting no shield from timer', this.accountId);
+                    delete imukeTargets[this.accountId];
+                }, {accountId: accountId}), 5000); 
+                
+                // clear noshield 
+                clearTimeout(noshieldTargets[accountId]);
+                delete noshieldTargets[accountId];
+                
+                if(bNodelayEnabled){
+                    var endNoshieldEffect = CreateRecvPacketBuffer(0x0196, {type: NOSHIELD_EFFECT['clear'], ID: accountId, flag: 0});
+                    proxySocket.write(endNoshieldEffect);
+                }
+            }
+            else{
+                // clear imuke
+                clearTimeout(imukeTargets[accountId]);
+                delete imukeTargets[accountId];
+                //96 01 7b 00 f3 3a 10 00 00
+                
+                if(bNodelayEnabled){
+                    var endImukeEffect = CreateRecvPacketBuffer(0x0196, {type: IMUKE_EFFECT['clear'], ID: accountId, flag: 0});
+                    proxySocket.write(endImukeEffect);
+                }
+                
+                // clear noshield
+                clearTimeout(noshieldTargets[accountId]);
+                delete noshieldTargets[accountId];
+                
+                if(bNodelayEnabled){
+                    var endNoshieldEffect = CreateRecvPacketBuffer(0x0196, {type: NOSHIELD_EFFECT['clear'], ID: accountId, flag: 0});
+                    proxySocket.write(endNoshieldEffect);
+                }
+            }
             
 			if(bNodelayEnabled && accountId != accountInfo.accountId && inspirationTargets.hasOwnProperty(accountId)){
 				// bitwise OR 512 into opt3
+                
+                //console.log('target is in inspiration');
 				
 				var dataInfo = RECV[packet.header].datamap['opt3'];
 				var length = dataInfo.end - dataInfo.start;
-				var value = opt3 | 512;
+				var value = opt3 | INSPIRATION_EFFECT['update'];
 				for(var i = 0; i < length; i++){
 					packet.bytes[dataInfo.start + i] = (value >> (i * 8)) & 0xff;
 				}
 				
-				//delete inspirationTargets[accountId];
-				//console.log('deleting inspiration', inspirationTargets);
+			}
+            
+			if(bNodelayEnabled && accountId != accountInfo.accountId && imukeTargets.hasOwnProperty(accountId)){
+				// bitwise OR 65536 into opt3
+                
+                // Not in my guild or ally guilds
+                if(!(guildId in accountInfo.allies || (guildId == accountInfo.guildId && accountInfo.guildId !== 0))){
+                    //console.log('target is in imuke');
+                    
+                    var dataInfo = RECV[packet.header].datamap['opt3'];
+                    var length = dataInfo.end - dataInfo.start;
+                    var value = opt3 | IMUKE_EFFECT['update'];
+                    for(var i = 0; i < length; i++){
+                        packet.bytes[dataInfo.start + i] = (value >> (i * 8)) & 0xff;
+                    }
+                }
+			}
+            
+            if(bNodelayEnabled && accountId != accountInfo.accountId && noshieldTargets.hasOwnProperty(accountId)){
+				// bitwise OR 65536 into opt3
+                
+                //console.log('target is shieldless');
+                
+                var dataInfo = RECV[packet.header].datamap['opt3'];
+                var length = dataInfo.end - dataInfo.start;
+                var value = opt3 | NOSHIELD_EFFECT['update'];
+                for(var i = 0; i < length; i++){
+                    packet.bytes[dataInfo.start + i] = (value >> (i * 8)) & 0xff;
+                }
+                
 			}
 		}
 		
@@ -1370,7 +1552,7 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 				var expected = modDefinition.filter[key];
 				if(typeof(expected) == 'function'){
 					// filter function must return bool
-					if(!expected(value)){
+					if(!expected(value, accountInfo)){
 						noMatch = true;
 						break;
 					}

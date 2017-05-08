@@ -200,7 +200,7 @@ var RECVMOD = {
 			useAccount: {field: null, useMine: false}, 
 			response: [
 				{cheat: false, type: RES_SPEECH, delay: 0, data: {msg: 'hungry'}},
-                {cheat: true, type: RES_SERVER, send: 0x01a1, delay: 0, data: {option: 1}}, // feed pet
+                //{cheat: true, type: RES_SERVER, send: 0x01a1, delay: 0, data: {option: 1}}, // feed pet
 			],
 		},
     ],
@@ -280,6 +280,22 @@ var RECVMOD = {
 				{cheat: false, type: RES_MODIFY, data: {dst_speed: 100}}, //  speed this up
 			],
 		},
+		{
+			filter: {skillId: 2008, sourceId: function(x, info) { return info.accountId !== x}, targetId: function(x, info) { return info.accountId !== x} }, // cast dragon breath
+			useAccount: {field: null, useMine: false}, // make sure this field is my own account
+			response: [
+				{cheat: false, type: RES_MODIFY, data: {skillId: 93}}, // replace with Sense
+				{cheat: false, type: RES_CLIENT, send: 0x011a, delay: 0, inField: 'sourceId', outField: ['sourceId', 'targetId'], myField: null, useMine: false, data: {skillId: 2008, lv: 10}}, 
+			],
+		},
+		{
+			filter: {skillId: 5004, sourceId: function(x, info) { return info.accountId !== x}, targetId: function(x, info) { return info.accountId !== x} }, // cast water dragon breath
+			useAccount: {field: null, useMine: false}, // make sure this field is my own account
+			response: [
+				{cheat: false, type: RES_MODIFY, data: {skillId: 93}}, // replace with Sense
+				{cheat: false, type: RES_CLIENT, send: 0x011a, delay: 0, inField: 'sourceId', outField: ['sourceId', 'targetId'], myField: null, useMine: false, data: {skillId: 5004, lv: 10}}, 
+			],
+		},
 //		{
 //			filter: {skillId: 5004}, // cast water dragon breath
 //			useAccount: {field: null, useMine: false}, // make sure this field is my own account
@@ -310,15 +326,15 @@ var RECVMOD = {
 //		},
 	],
 
-	0x0229: [
-		{
-			filter: {option: 64, opt1: 0, opt2: 0}, // cast Full Divest
-			useAccount: {field: 'ID', useMine: false}, // make sure this field is my own account
-			response: [
-				{cheat: true, type: RES_MODIFY, data: {option: 0}}, // replace with Divest Shield
-			],
-		},
-	],
+//	0x0229: [
+//		{
+//			filter: {option: 64, opt1: 0, opt2: 0}, // cast Full Divest
+//			useAccount: {field: 'ID', useMine: false}, // make sure this field is my own account
+//			response: [
+//				{cheat: true, type: RES_MODIFY, data: {option: 0}}, // replace with Divest Shield
+//			],
+//		},
+//	],
 	0x02bb: [
 		{
 			filter: { }, // cast Full Divest
@@ -381,6 +397,14 @@ var RECVMOD = {
 			useAccount: {field: null, useMine: false}, 
 			response: [
 				{cheat: false, type: RES_SPEECH, delay: 15000, data: {msg: 'Stoop'}}, 
+				{cheat: true, type: RES_CLIENT, send: 0x01d0, delay: 0, inField: null, myField:'sourceId', useMine: true, data: {entity: 5}}, // show spirit spheres on cooldown start
+				{cheat: true, type: RES_CLIENT, send: 0x01d0, delay: 3000, inField: null, myField:'sourceId', useMine: true, data: {entity: 4}}, 
+				{cheat: true, type: RES_CLIENT, send: 0x01d0, delay: 6000, inField: null, myField:'sourceId', useMine: true, data: {entity: 3}}, 
+				{cheat: true, type: RES_CLIENT, send: 0x01d0, delay: 9000, inField: null, myField:'sourceId', useMine: true, data: {entity: 2}}, 
+				{cheat: true, type: RES_CLIENT, send: 0x01d0, delay: 12000, inField: null, myField:'sourceId', useMine: true, data: {entity: 1}}, 
+				{cheat: true, type: RES_CLIENT, send: 0x01d0, delay: 15000, inField: null, myField:'sourceId', useMine: true, data: {entity: 0}}, // remove spirit spheres on cooldown end
+                {cheat: true, type: RES_CLIENT, send: 0x011a, delay: 15000, inField: null, myField:['sourceId','targetId'], useMine: true, data: {skillId: 2263, amount: 1, success: 1}}, // play Cooldown Effect
+				
 			],
 		},
 		{
@@ -517,70 +541,70 @@ var RECVMOD = {
 	],
 
 	0x07fb: [
-		{
-			filter: {
-				skillId: function(x){ 
-					var dropSkills = new Set([28, 214, 249, 356, 476, 1005]);
-					return dropSkills.has(x);
-				},
-				wait: function(x){ return x < 1;}
-			}, // ..., close confine, fiberlock
-				
-			useAccount: {field: 'sourceId', useMine: true}, // make sure this field is my own account
-			response: [
-				{cheat: true, type: RES_MODIFY, data: {wait: 1}}, // Add a cast time
-			],
-		},
-		{
-			filter: {
-				skillId: function(x){ 
-					var dropSkills = new Set([2298, 2293, 2294, 2297]); // Add a cast time to enemy chasers
-					return dropSkills.has(x);
-				},
-				wait: function(x){ return x < 1;}
-			},
-				
-			useAccount: {field: 'sourceId', useMine: false}, // enemey actors
-			response: [
-				{cheat: true, type: RES_MODIFY, data: {wait: 1}}, // Add a cast time
-			],
-		},
-		{
-			filter: {skillId: 2298}, // cast Divest Accessory
-			useAccount: {field: 'sourceId', useMine: true}, // make sure this field is my own account
-			response: [
-				{cheat: true, type: RES_MODIFY, data: {skillId: 218}}, // replace with Divest Helm
-			],
-		},
-		{
-			filter: {skillId: 2293}, // cast Masquerade Gloomy
-			useAccount: {field: 'sourceId', useMine: true}, // make sure this field is my own account
-			response: [
-				{cheat: true, type: RES_MODIFY, data: {skillId: 217}}, // replace with Divest Armor
-			],
-		},
-		{
-			filter: {skillId: 2294}, // cast Masquerade Ignorance
-			useAccount: {field: 'sourceId', useMine: true}, // make sure this field is my own account
-			response: [
-				{cheat: true, type: RES_MODIFY, data: {skillId: 215}}, // replace with Divest Weapon
-			],
-		},
-		{
-			filter: {skillId: 2297}, // cast Masquerade Weakness
-			useAccount: {field: 'sourceId', useMine: true}, // make sure this field is my own account
-			response: [
-				{cheat: true, type: RES_MODIFY, data: {skillId: 216}}, // replace with Divest Shield
-			],
-		},
-		{
-			filter: {skillId: 51}, // cast Hide
-			useAccount: {field: 'sourceId', useMine: true}, // make sure this field is my own account
-			response: [
-				//{cheat: true, type: RES_CLIENT, send: 0x01d0, delay: 0, inField: null, myField:'sourceId', useMine: true, data: {entity: 5}}, 
-				{cheat: true, type: RES_CLIENT, send: 0x043f, delay: 0, inField: null, myField:'ID', useMine: true, data: {type: 184, tick: 10000, flag: 1, unknown1: 1, unknown2: 0, unknown3: 0}}, // add maya purple
-			],
-		},
+//		{
+//			filter: {
+//				skillId: function(x){ 
+//					var dropSkills = new Set([28, 214, 249, 356, 476, 1005]);
+//					return dropSkills.has(x);
+//				},
+//				wait: function(x){ return x < 1;}
+//			}, // ..., close confine, fiberlock
+//				
+//			useAccount: {field: 'sourceId', useMine: true}, // make sure this field is my own account
+//			response: [
+//				{cheat: true, type: RES_MODIFY, data: {wait: 1}}, // Add a cast time
+//			],
+//		},
+//		{
+//			filter: {
+//				skillId: function(x){ 
+//					var dropSkills = new Set([2298, 2293, 2294, 2297]); // Add a cast time to enemy chasers
+//					return dropSkills.has(x);
+//				},
+//				wait: function(x){ return x < 1;}
+//			},
+//				
+//			useAccount: {field: 'sourceId', useMine: false}, // enemey actors
+//			response: [
+//				{cheat: true, type: RES_MODIFY, data: {wait: 1}}, // Add a cast time
+//			],
+//		},
+//		{
+//			filter: {skillId: 2298}, // cast Divest Accessory
+//			useAccount: {field: 'sourceId', useMine: true}, // make sure this field is my own account
+//			response: [
+//				{cheat: true, type: RES_MODIFY, data: {skillId: 218}}, // replace with Divest Helm
+//			],
+//		},
+//		{
+//			filter: {skillId: 2293}, // cast Masquerade Gloomy
+//			useAccount: {field: 'sourceId', useMine: true}, // make sure this field is my own account
+//			response: [
+//				{cheat: true, type: RES_MODIFY, data: {skillId: 217}}, // replace with Divest Armor
+//			],
+//		},
+//		{
+//			filter: {skillId: 2294}, // cast Masquerade Ignorance
+//			useAccount: {field: 'sourceId', useMine: true}, // make sure this field is my own account
+//			response: [
+//				{cheat: true, type: RES_MODIFY, data: {skillId: 215}}, // replace with Divest Weapon
+//			],
+//		},
+//		{
+//			filter: {skillId: 2297}, // cast Masquerade Weakness
+//			useAccount: {field: 'sourceId', useMine: true}, // make sure this field is my own account
+//			response: [
+//				{cheat: true, type: RES_MODIFY, data: {skillId: 216}}, // replace with Divest Shield
+//			],
+//		},
+//		{
+//			filter: {skillId: 51}, // cast Hide
+//			useAccount: {field: 'sourceId', useMine: true}, // make sure this field is my own account
+//			response: [
+//				//{cheat: true, type: RES_CLIENT, send: 0x01d0, delay: 0, inField: null, myField:'sourceId', useMine: true, data: {entity: 5}}, 
+//				{cheat: true, type: RES_CLIENT, send: 0x043f, delay: 0, inField: null, myField:'ID', useMine: true, data: {type: 184, tick: 10000, flag: 1, unknown1: 1, unknown2: 0, unknown3: 0}}, // add maya purple
+//			],
+//		},
 //		{
 //			filter: {skillId: 150}, // cast Backslide
 //			useAccount: {field: 'sourceId', useMine: true}, // make sure this field is my own account
@@ -690,13 +714,6 @@ var RECVMOD = {
 				//{cheat: false, type: RES_SPEECH, delay: 0, data: {msg: 'hide'}},
 			],
 		},
-		//{
-		//	filter: {opt3: 0}, 
-		//	useAccount: {field: null, useMine: false}, 
-		//	response: [
-		//		{cheat: true, type: RES_MODIFY, data: {opt3: 4095}},
-		//	],
-		//},
 	],
 //	0x0914: [
 //		{
@@ -752,6 +769,13 @@ var RECVMOD = {
 				//{cheat: false, type: RES_SPEECH, delay: 0, data: {msg: 'hide'}},
 			],
 		},
+		//{
+		//	filter: {opt3: 0}, 
+		//	useAccount: {field: null, useMine: false}, 
+		//	response: [
+		//		{cheat: true, type: RES_MODIFY, data: {opt3: 512}},
+		//	],
+		//},
 	],
 	0x09dc: [
 		{

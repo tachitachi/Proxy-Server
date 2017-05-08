@@ -207,6 +207,7 @@
 		socket.on('voice', function(data){
 			window.speechSynthesis.cancel();
 			var msg = new SpeechSynthesisUtterance(data.msg);
+            msg.voice = window.speechSynthesis.getVoices()[3];
 			window.speechSynthesis.speak(msg);
 		});
 		
@@ -623,7 +624,7 @@
 		}
 		
 		function ChangeMoveAura(auraValue){
-			var data = {header: 0x0914, pos: 1, field: 'opt3', value: auraValue};
+			var data = {header: 0x09db, pos: 2, field: 'opt3', value: auraValue};
 			socket.emit('modify mod', data);
 		}
 		
@@ -740,7 +741,19 @@
 		
 		function EndEffect(skillId){
 			//socket.emit('send to client', 'hello');
-			var packet = '96 01 {0} f3 3a 10 00 00'.format(IntToHexString(skillId, 2));
+			var packet = '96 01 {0} 63 06 3a 00 00'.format(IntToHexString(skillId, 2));
+			
+			if(packet != ''){				
+				//console.log($packet.val());
+				console.log(packet);
+				socket.emit('send to client', packet);
+			}
+		}
+        
+        function StartEffect(skillId){
+			//socket.emit('send to client', 'hello');
+			//var packet = '83 09 {0} 63 06 3a 00 01 60 ea 00 00 60 ea 00 00 01 00 00 00 00 00 00 00 00 00 00 00'.format(IntToHexString(skillId, 2));
+			  var packet = '83 09 {0} 63 06 3a 00 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00'.format(IntToHexString(skillId, 2));
 			
 			if(packet != ''){				
 				//console.log($packet.val());

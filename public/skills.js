@@ -1138,6 +1138,7 @@ var DbTable_Skills = {
 	5016:"SR_FLASHCOMBO_ATK_STEP2",
 	5017:"SR_FLASHCOMBO_ATK_STEP3",
 	5018:"SR_FLASHCOMBO_ATK_STEP4",
+    5033:"Picky Peck",
 	8001:"Healing Hands",
 	8002:"Urgent Escape",
 	8003:"Brain Surgery",
