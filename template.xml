@@ -19,9 +19,5 @@
   </ProxyList>
   <ChainList />
   <RuleList>
-    <Rule enabled="true">
-      <Name>Default</Name>
-      <Action type="Direct" />
-    </Rule>
   </RuleList>
 </ProxifierProfile>
