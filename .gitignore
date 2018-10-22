@@ -1,4 +1,5 @@
 *.log
+*.ppx
 
 # Windows image file caches
 Thumbs.db

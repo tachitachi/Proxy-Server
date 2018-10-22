@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<ProxifierProfile version="101" platform="Windows" product_id="0" product_minver="310">
+  <Options>
+    <Resolve>
+      <AutoModeDetection enabled="true" />
+      <ViaProxy enabled="false">
+        <TryLocalDnsFirst enabled="false" />
+      </ViaProxy>
+      <ExclusionList>%ComputerName%; localhost; *.local</ExclusionList>
+    </Resolve>
+    <Encryption mode="basic" />
+    <HttpProxiesSupport enabled="false" />
+    <HandleDirectConnections enabled="false" />
+    <ConnectionLoopDetection enabled="true" />
+    <ProcessServices enabled="false" />
+    <ProcessOtherUsers enabled="false" />
+  </Options>
+  <ProxyList>
+  </ProxyList>
+  <ChainList />
+  <RuleList>
+    <Rule enabled="true">
+      <Name>Default</Name>
+      <Action type="Direct" />
+    </Rule>
+  </RuleList>
+</ProxifierProfile>
