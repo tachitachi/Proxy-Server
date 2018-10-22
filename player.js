@@ -1,3 +1,6 @@
+'use strict';
+
+var bufutil = require('./bufutil');
 
 function Player(data, socket){
 	this.data = data;
@@ -16,7 +19,7 @@ function Player(data, socket){
 }
 
 Player.prototype.IsGroundSendSkill = function(skillId){
-	if(!bufStartsWith(this.data, groundSendHeader))
+	if(!bufutil.bufStartsWith(this.data, groundSendHeader))
 		return false;
 		
 	if(this.data[4] == skillId[0] && this.data[5] == skillId[1])
@@ -26,7 +29,7 @@ Player.prototype.IsGroundSendSkill = function(skillId){
 }
 
 Player.prototype.IsTargetSendSkill = function(skillId){
-	if(!bufStartsWith(this.data, targetSendHeader))
+	if(!bufutil.bufStartsWith(this.data, targetSendHeader))
 		return false;
 		
 	if(this.data[4] == skillId[0] && this.data[5] == skillId[1])
@@ -51,9 +54,9 @@ Player.prototype.RemoveTransform = function(){
 	for(var curIdx = 0; curIdx < this.data.length; curIdx++)
 	{
 		// len 24?
-		var actorStatusActiveHeaderPos = bufContains(this.data, actorStatusActiveHeader, curIdx);
+		var actorStatusActiveHeaderPos = bufutil.bufContains(this.data, actorStatusActiveHeader, curIdx);
 		if(actorStatusActiveHeaderPos >= 0){		
-			if(bufStartsWith(this.data.slice(actorStatusActiveHeaderPos + 2), actorStatusTypeTransform)){		
+			if(bufutil.bufStartsWith(this.data.slice(actorStatusActiveHeaderPos + 2), actorStatusTypeTransform)){		
 					this.data[actorStatusActiveHeaderPos + 13] = 0x00;
 					this.data[actorStatusActiveHeaderPos + 14] = 0x00;
 					this.data[actorStatusActiveHeaderPos + 15] = 0x00;
@@ -64,9 +67,9 @@ Player.prototype.RemoveTransform = function(){
 		}
 		
 		// len 24
-		var actorStatusActiveHeader2Pos = bufContains(this.data, actorStatusActive2Header, curIdx);
+		var actorStatusActiveHeader2Pos = bufutil.bufContains(this.data, actorStatusActive2Header, curIdx);
 		if(actorStatusActiveHeader2Pos >= 0){		
-			if(bufStartsWith(this.data.slice(actorStatusActiveHeader2Pos + 6), actorStatusTypeTransform)){		
+			if(bufutil.bufStartsWith(this.data.slice(actorStatusActiveHeader2Pos + 6), actorStatusTypeTransform)){		
 					this.data[actorStatusActiveHeader2Pos + 12] = 0x00;
 					this.data[actorStatusActiveHeader2Pos + 13] = 0x00;
 					this.data[actorStatusActiveHeader2Pos + 14] = 0x00;
@@ -88,7 +91,7 @@ Player.prototype._ModifyActorStatuses = function(statusList, bUseMyAccount){
 	var packetLen = 25;
 	for(var curIdx = 0; curIdx < this.data.length; curIdx++)
 	{
-		var actorStatusActiveHeaderPos = bufContains(this.data, actorStatusActiveHeader, curIdx);
+		var actorStatusActiveHeaderPos = bufutil.bufContains(this.data, actorStatusActiveHeader, curIdx);
 		if(actorStatusActiveHeaderPos < 0)
 			return;
 		
@@ -106,28 +109,28 @@ Player.prototype._ModifyActorStatuses = function(statusList, bUseMyAccount){
 			var drop = statusData.drop;
 			//console.log('data:', bufPrint(this.data.slice(actorStatusActiveHeaderPos, actorStatusActiveHeaderPos + 25)));
 			
-			if(!(bufStartsWith(this.data.slice(actorStatusActiveHeaderPos + 4), accountId) ^ bUseMyAccount) && bufStartsWith(this.data.slice(actorStatusActiveHeaderPos + 2), typeId)){
+			if(!(bufutil.bufStartsWith(this.data.slice(actorStatusActiveHeaderPos + 4), accountId) ^ bUseMyAccount) && bufutil.bufStartsWith(this.data.slice(actorStatusActiveHeaderPos + 2), typeId)){
 				//console.log('modifying actor status', bufPrint(this.data.slice(actorStatusActiveHeaderPos, actorStatusActiveHeaderPos + 25)));
 				
-				if(oldFlag != null && !bufStartsWith(this.data.slice(actorStatusActiveHeaderPos + 8), oldFlag)){
+				if(oldFlag != null && !bufutil.bufStartsWith(this.data.slice(actorStatusActiveHeaderPos + 8), oldFlag)){
 					//console.log('flag doesnt match');
 					continue;
 				}
-				if(oldUnknown1 != null && !bufStartsWith(this.data.slice(actorStatusActiveHeaderPos + 13), oldUnknown1)){
+				if(oldUnknown1 != null && !bufutil.bufStartsWith(this.data.slice(actorStatusActiveHeaderPos + 13), oldUnknown1)){
 					//console.log('unknown1 doesnt match');
 					continue;
 				}
-				if(oldUnknown2 != null && !bufStartsWith(this.data.slice(actorStatusActiveHeaderPos + 17), oldUnknown2)){
+				if(oldUnknown2 != null && !bufutil.bufStartsWith(this.data.slice(actorStatusActiveHeaderPos + 17), oldUnknown2)){
 					//console.log('unknown1 doesnt match');
 					continue;
 				}
-				if(oldUnknown3 != null && !bufStartsWith(this.data.slice(actorStatusActiveHeaderPos + 21), oldUnknown3)){
+				if(oldUnknown3 != null && !bufutil.bufStartsWith(this.data.slice(actorStatusActiveHeaderPos + 21), oldUnknown3)){
 					//console.log('unknown1 doesnt match');
 					continue;
 				}
 			
 				if(drop){
-					this.data = bufRemove(this.data, actorStatusActiveHeaderPos, packetLen);
+					this.data = bufutil.bufRemove(this.data, actorStatusActiveHeaderPos, packetLen);
 					curIdx += packetLen - 1;
 					break;
 				}
@@ -167,15 +170,15 @@ Player.prototype.DropGroundSkills = function(){
 	
 	for(var curIdx = 0; curIdx < this.data.length; curIdx++)
 	{
-		var groundRecvHeaderPos = bufContains(this.data, groundRecvHeader, curIdx);
+		var groundRecvHeaderPos = bufutil.bufContains(this.data, groundRecvHeader, curIdx);
 		if(groundRecvHeaderPos < 0)
 			return;
 		
 		for(var i = 0; i < this.GroundSkills.length; i++){
 			var skillId = this.GroundSkills[i];
-			if(bufStartsWith(this.data.slice(groundRecvHeaderPos + 2), skillId)){
-				if(bufStartsWith(this.data.slice(groundRecvHeaderPos + 4), accountId)){
-					this.data = bufRemove(this.data, groundRecvHeaderPos, packetLen);
+			if(bufutil.bufStartsWith(this.data.slice(groundRecvHeaderPos + 2), skillId)){
+				if(bufutil.bufStartsWith(this.data.slice(groundRecvHeaderPos + 4), accountId)){
+					this.data = bufutil.bufRemove(this.data, groundRecvHeaderPos, packetLen);
 					// what if there's a "header" in an early position, that's not the real header?
 					curIdx += packetLen - 1;
 					break;
@@ -191,15 +194,15 @@ Player.prototype.DropSkillUse = function(){
 	
 	for(var curIdx = 0; curIdx < this.data.length; curIdx++)
 	{
-		var skillUseHeaderPos = bufContains(this.data, skillUseHeader, curIdx);
+		var skillUseHeaderPos = bufutil.bufContains(this.data, skillUseHeader, curIdx);
 		if(skillUseHeaderPos < 0)
 			return;
 		
 		for(var i = 0; i < this.SkillUse.length; i++){
 			var skillId = this.SkillUse[i];
-			if(bufStartsWith(this.data.slice(skillUseHeaderPos + 2), skillId)){
-				if(bufStartsWith(this.data.slice(skillUseHeaderPos + 4), accountId)){
-					this.data = bufRemove(this.data, skillUseHeaderPos, packetLen);
+			if(bufutil.bufStartsWith(this.data.slice(skillUseHeaderPos + 2), skillId)){
+				if(bufutil.bufStartsWith(this.data.slice(skillUseHeaderPos + 4), accountId)){
+					this.data = bufutil.bufRemove(this.data, skillUseHeaderPos, packetLen);
 					// what if there's a "header" in an early position, that's not the real header?
 					curIdx += packetLen - 1;
 					break;
@@ -215,7 +218,7 @@ Player.prototype.ModifySkillUse = function(){
 	
 	for(var curIdx = 0; curIdx < this.data.length; curIdx++)
 	{
-		var skillUseHeaderPos = bufContains(this.data, skillUseHeader, curIdx);
+		var skillUseHeaderPos = bufutil.bufContains(this.data, skillUseHeader, curIdx);
 		if(skillUseHeaderPos < 0)
 			return;
 		
@@ -225,10 +228,10 @@ Player.prototype.ModifySkillUse = function(){
 			var newSkillId = skillData.newskill;
 			var hits = skillData.hits;
 			var drop = skillData.drop;
-			if(bufStartsWith(this.data.slice(skillUseHeaderPos + 2), skillId)){
-				if(bufStartsWith(this.data.slice(skillUseHeaderPos + 4), accountId)){
+			if(bufutil.bufStartsWith(this.data.slice(skillUseHeaderPos + 2), skillId)){
+				if(bufutil.bufStartsWith(this.data.slice(skillUseHeaderPos + 4), accountId)){
 					
-					//this.data = bufRemove(this.data, skillUseHeaderPos, 33);
+					//this.data = bufutil.bufRemove(this.data, skillUseHeaderPos, 33);
 					// what if there's a "header" in an early position, that's not the real header?
 					
 					//console.log(skillData);
@@ -236,7 +239,7 @@ Player.prototype.ModifySkillUse = function(){
 						
 					if(drop){
 						//console.log('dropping');
-						this.data = bufRemove(this.data, skillUseHeaderPos, packetLen);
+						this.data = bufutil.bufRemove(this.data, skillUseHeaderPos, packetLen);
 						curIdx += packetLen - 1;
 						break;
 					}
@@ -269,15 +272,15 @@ Player.prototype.DropAutoSkills = function(){
 	
 	for(var curIdx = 0; curIdx < this.data.length; curIdx++)
 	{
-		var autoSkillHeaderPos = bufContains(this.data, autoSkillHeader, curIdx);
+		var autoSkillHeaderPos = bufutil.bufContains(this.data, autoSkillHeader, curIdx);
 		if(autoSkillHeaderPos < 0)
 			return;
 		
 		for(var i = 0; i < this.AutoSkills.length; i++){
 			var skillId = this.AutoSkills[i];
-			if(bufStartsWith(this.data.slice(autoSkillHeaderPos + 2), skillId)){
-				if(bufStartsWith(this.data.slice(autoSkillHeaderPos + 10), accountId)){
-					this.data = bufRemove(this.data, autoSkillHeaderPos, packetLen);
+			if(bufutil.bufStartsWith(this.data.slice(autoSkillHeaderPos + 2), skillId)){
+				if(bufutil.bufStartsWith(this.data.slice(autoSkillHeaderPos + 10), accountId)){
+					this.data = bufutil.bufRemove(this.data, autoSkillHeaderPos, packetLen);
 					// what if there's a "header" in an early position, that's not the real header?
 					curIdx += packetLen - 1;
 					break;
@@ -301,7 +304,7 @@ Player.prototype._ModifyCasts = function(skillList, bUseMyAccount){
 	
 	for(var curIdx = 0; curIdx < this.data.length; curIdx++)
 	{
-		var skillCastHeaderPos = bufContains(this.data, skillCastHeader, curIdx);
+		var skillCastHeaderPos = bufutil.bufContains(this.data, skillCastHeader, curIdx);
 		if(skillCastHeaderPos < 0)
 			return;
 		
@@ -312,9 +315,9 @@ Player.prototype._ModifyCasts = function(skillList, bUseMyAccount){
 			var castTime = skillData.cast;
 			var drop = skillData.drop;
 			
-			if(!(bufStartsWith(this.data.slice(skillCastHeaderPos + 2), accountId) ^ bUseMyAccount) && bufStartsWith(this.data.slice(skillCastHeaderPos + 14), skillId)){
+			if(!(bufutil.bufStartsWith(this.data.slice(skillCastHeaderPos + 2), accountId) ^ bUseMyAccount) && bufutil.bufStartsWith(this.data.slice(skillCastHeaderPos + 14), skillId)){
 				if(drop){
-					this.data = bufRemove(this.data, skillCastHeaderPos, packetLen);
+					this.data = bufutil.bufRemove(this.data, skillCastHeaderPos, packetLen);
 					curIdx += packetLen - 1;
 					break;
 				}
@@ -350,7 +353,7 @@ Player.prototype.ModifyAutoCasts = function(){
 	
 	for(var curIdx = 0; curIdx < this.data.length; curIdx++)
 	{
-		var autoSkillHeaderPos = bufContains(this.data, autoSkillHeader, curIdx);
+		var autoSkillHeaderPos = bufutil.bufContains(this.data, autoSkillHeader, curIdx);
 		if(autoSkillHeaderPos < 0)
 			return;
 		
@@ -361,9 +364,9 @@ Player.prototype.ModifyAutoCasts = function(){
 			//var castTime = skillData.cast;
 			var drop = skillData.drop;
 			
-			if(bufStartsWith(this.data.slice(autoSkillHeaderPos + 10), accountId) && bufStartsWith(this.data.slice(autoSkillHeaderPos + 2), skillId)){
+			if(bufutil.bufStartsWith(this.data.slice(autoSkillHeaderPos + 10), accountId) && bufutil.bufStartsWith(this.data.slice(autoSkillHeaderPos + 2), skillId)){
 				if(drop){
-					this.data = bufRemove(this.data, autoSkillHeaderPos, packetLen);
+					this.data = bufutil.bufRemove(this.data, autoSkillHeaderPos, packetLen);
 					curIdx += packetLen - 1;
 					break;
 				}
@@ -394,7 +397,7 @@ Player.prototype._ModifyCharacterStatuses = function(skillList, bUseMyAccount){
 	
 	for(var curIdx = 0; curIdx < this.data.length; curIdx++)
 	{
-		var characterStatusHeaderPos = bufContains(this.data, characterStatusHeader, curIdx);
+		var characterStatusHeaderPos = bufutil.bufContains(this.data, characterStatusHeader, curIdx);
 		if(characterStatusHeaderPos < 0)
 			return;
 		
@@ -409,20 +412,20 @@ Player.prototype._ModifyCharacterStatuses = function(skillList, bUseMyAccount){
 			var newOption = statusData.newOption;
 			var drop = statusData.drop;
 			
-			if(!(bufStartsWith(this.data.slice(characterStatusHeaderPos + 2), accountId) ^ bUseMyAccount)){
+			if(!(bufutil.bufStartsWith(this.data.slice(characterStatusHeaderPos + 2), accountId) ^ bUseMyAccount)){
 			
-				if(oldOpt1 != null && !bufStartsWith(this.data.slice(characterStatusHeaderPos + 6), oldOpt1)){
+				if(oldOpt1 != null && !bufutil.bufStartsWith(this.data.slice(characterStatusHeaderPos + 6), oldOpt1)){
 					continue;
 				}
-				if(oldOpt2 != null && !bufStartsWith(this.data.slice(characterStatusHeaderPos + 8), oldOpt2)){
+				if(oldOpt2 != null && !bufutil.bufStartsWith(this.data.slice(characterStatusHeaderPos + 8), oldOpt2)){
 					continue;
 				}
-				if(oldOption != null && !bufStartsWith(this.data.slice(characterStatusHeaderPos + 10), oldOption)){
+				if(oldOption != null && !bufutil.bufStartsWith(this.data.slice(characterStatusHeaderPos + 10), oldOption)){
 					continue;
 				}
 			
 				if(drop){
-					this.data = bufRemove(this.data, characterStatusHeaderPos, packetLen);
+					this.data = bufutil.bufRemove(this.data, characterStatusHeaderPos, packetLen);
 					curIdx += packetLen - 1;
 					break;
 				}
@@ -568,7 +571,6 @@ Sura.prototype.ProcessSend = function(){
 		var y1 = y & 0xff;
 		var y2 = (y & 0xff00) >> 8;
 		
-		//console.log(printHex(x1), printHex(x2), printHex(y1), printHex(y2));
 		this.data[6] = x1;
 		this.data[7] = x2;
 		this.data[8] = y1;

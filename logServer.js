@@ -11,9 +11,13 @@ var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 
+var recv = require('./common/recv');
+var send = require('./common/send');
+var bufutil = require('./bufutil');
+
 eval(fs.readFileSync('public/parse.js').toString());
-eval(fs.readFileSync('public/recv.js').toString());
-eval(fs.readFileSync('public/send.js').toString());
+//eval(fs.readFileSync('public/recv.js').toString());
+//eval(fs.readFileSync('public/send.js').toString());
 eval(fs.readFileSync('public/skills.js').toString());
 eval(fs.readFileSync('public/items.js').toString());
 
@@ -23,7 +27,7 @@ eval(fs.readFileSync('public/monstermod.js').toString());
 eval(fs.readFileSync('public/rareitem.js').toString());
 
 eval(fs.readFileSync('player.js').toString());
-eval(fs.readFileSync('bufutil.js').toString());
+//eval(fs.readFileSync('bufutil.js').toString());
 eval(fs.readFileSync('constants.js').toString());
 
 eval(fs.readFileSync('LogMessage.js').toString());
@@ -153,7 +157,7 @@ client.connect(5555, '127.0.0.1', function() {
 });
 
 client.on('data', function(data) {
-	//console.log('Received: ' + bufPrint(data));
+	//console.log('Received: ' + bufutil.bufPrint(data));
 	PACKET_LOG_BUFFER.Add(data);
 	var packetList = [];
 	var packet = PACKET_LOG_BUFFER.GetNextPacket();
@@ -169,7 +173,7 @@ client.on('data', function(data) {
 		if(packetNum > kMaxNumPackets){
 			// remove whatever packets are in the buffer
 			//console.log('Too many packets, might have been infinite looping');
-			//console.log(bufPrint(PACKET_LOG_BUFFER.buffer));
+			//console.log(bufutil.bufPrint(PACKET_LOG_BUFFER.buffer));
 			//PACKET_LOG_BUFFER.buffer = null;
 		}
 	}

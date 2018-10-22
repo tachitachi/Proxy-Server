@@ -1,4 +1,4 @@
-
+'use strict'; 
 function bufCompare(a, b){
 	if(a.length != b.length){
 		//console.log('diff sizes');
@@ -158,4 +158,19 @@ function _CreatePacket(buf, definition, data){
 		}
 	}
 	return buf;
+}
+
+module.exports = {
+	'bufCompare': bufCompare,
+	'bufStartsWith': bufStartsWith,
+	'bufContains': bufContains,
+	'padDigits': padDigits,
+	'printHex': printHex,
+	'bufToList': bufToList,
+	'bufPrint': bufPrint,
+	'bufRemove': bufRemove,
+	'Print': Print,
+	'StringToBuffer': StringToBuffer,
+	'IntToBuffer': IntToBuffer,
+	'_CreatePacket': _CreatePacket,
 }

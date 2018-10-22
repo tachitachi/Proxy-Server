@@ -1,2 +1,10 @@
-var RO_INSTALL_LOCATION = 'C:\\Users\\Kiba1\\Documents\\Ragnarok Online';
-var RO_SERVER = 'Chaos';
+'use strict';
+
+define(function(require){
+
+	return {
+		'RO_INSTALL_LOCATION': 'D:\\RagnarokOnline',
+		'RO_SERVER': 'Chaos'
+	};
+
+});

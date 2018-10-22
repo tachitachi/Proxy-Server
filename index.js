@@ -9,32 +9,20 @@ var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var path = require('path');
 
-// load client-server shared files
-eval(fs.readFileSync('public/parse.js').toString());
-eval(fs.readFileSync('public/recv.js').toString());
-eval(fs.readFileSync('public/send.js').toString());
-eval(fs.readFileSync('public/skills.js').toString());
-eval(fs.readFileSync('public/items.js').toString());
-
-eval(fs.readFileSync('public/recvmod.js').toString());
-eval(fs.readFileSync('public/sendmod.js').toString());
-eval(fs.readFileSync('public/refill.js').toString());
-eval(fs.readFileSync('public/monstermod.js').toString());
-eval(fs.readFileSync('public/rareitem.js').toString());
-eval(fs.readFileSync('public/sounds.js').toString());
-
-//eval(fs.readFileSync('player.js').toString());
-eval(fs.readFileSync('bufutil.js').toString());
-eval(fs.readFileSync('config.js').toString());
-
-
-// TODO: Need better name than itemutil
-eval(fs.readFileSync('itemutil.js').toString());
-eval(fs.readFileSync('util.js').toString());
-eval(fs.readFileSync('constants.js').toString());
-
-eval(fs.readFileSync('LogMessage.js').toString());
-
+require("amd-loader");
+var recv = require('./common/recv');
+var send = require('./common/send');
+var bufutil = require('./bufutil');
+var parse = require('./common/parse');
+var recvmod = require('./common/recvmod');
+var sendmod = require('./common/sendmod');
+var refill = require('./common/refill');
+var monstermod = require('./common/monstermod');
+var rareitem = require('./common/rareitem');
+var config = require('./config');
+var itemutil = require('./itemutil');
+var constants = require('./constants');
+var logmessage = require('./LogMessage');
 
 app.use(express.static(__dirname + '/public'));
 
@@ -91,7 +79,7 @@ function ChangeLocation(coords){
 
 
 function copyEmblemAlliance(myId, theirId){
-    var emblemFolder = path.join(RO_INSTALL_LOCATION, '_tmpEmblem');
+    var emblemFolder = path.join(config.RO_INSTALL_LOCATION, '_tmpEmblem');
     // find source emblem: guild emblem with the highest emblem ID
     
     
@@ -100,7 +88,7 @@ function copyEmblemAlliance(myId, theirId){
             console.log(err);
             return;
         }
-        var sourcePrefix = RO_SERVER + '_' + theirId + '_';
+        var sourcePrefix = config.RO_SERVER + '_' + theirId + '_';
         var latestEmblem = null;
         var largestEmblemId = -1;
         
@@ -118,7 +106,7 @@ function copyEmblemAlliance(myId, theirId){
         if(latestEmblem !== null){
             //console.log(latestEmblem);
             var sourceEmblem = path.join(emblemFolder, latestEmblem);
-            var destEmblem = path.join(emblemFolder, RO_SERVER + '_' + myId + '_' + theirId + '.ebm');
+            var destEmblem = path.join(emblemFolder, config.RO_SERVER + '_' + myId + '_' + theirId + '.ebm');
             
             fs.createReadStream(sourceEmblem).pipe(fs.createWriteStream(destEmblem));
         }
@@ -201,15 +189,15 @@ io.on('connection', function(socket){
 	
 	socket.on('send to client', function(msg){
 		for(var i in clientConnections){
-			//console.log(bufPrint(StringToBuffer(msg)));
-			clientConnections[i].write(StringToBuffer(msg));
+			//console.log(bufutil.bufPrint(bufutil.StringToBuffer(msg)));
+			clientConnections[i].write(bufutil.StringToBuffer(msg));
 		}
 	});
 	
 	socket.on('send to server', function(msg){
 		for(var i in serverConnections){
-			//console.log(bufPrint(StringToBuffer(msg)));
-			serverConnections[i].write(StringToBuffer(msg));
+			//console.log(bufutil.bufPrint(bufutil.StringToBuffer(msg)));
+			serverConnections[i].write(bufutil.StringToBuffer(msg));
 		}
 	});
 	
@@ -282,8 +270,8 @@ io.on('connection', function(socket){
 			var coords = next.node;
 			var distance = next.distance;
 			//console.log('walking to', coords, distance, distance * this.walkspeed + 100);
-			var movePacket = CreateSendPacketBuffer(0x035f, {coords: IntToCoordBuffer(coords[0], coords[1])});
-			//console.log(bufPrint(movePacket));
+			var movePacket = send.CreateSendPacketBuffer(0x035f, {coords: IntToCoordBuffer(coords[0], coords[1])});
+			//console.log(bufutil.bufPrint(movePacket));
 			
 			if(connectionByAccount.hasOwnProperty(this.accountId)){
 				var server = connectionByAccount[this.accountId].server;
@@ -309,8 +297,8 @@ io.on('connection', function(socket){
 		//		field: Z
 		//		value: W
 		// }
-		//RECVMOD[data.header].response[data.pos].data[data.field] = data.value;
-		RECVMOD[data.header][data.pos].response[0].data[data.field] = data.value;
+		//recvmod.RECVMOD[data.header].response[data.pos].data[data.field] = data.value;
+		recvmod.RECVMOD[data.header][data.pos].response[0].data[data.field] = data.value;
 	});
 	
 	socket.on('refill', function(data){
@@ -343,7 +331,7 @@ io.on('connection', function(socket){
 		
 		var refillData = data.items;
 		
-		var storagePackets = storageRefill(refillData, accountInfo);
+		var storagePackets = itemutil.storageRefill(refillData, accountInfo);
 		console.log(storagePackets);
 		
 		if(storagePackets.length > 0){
@@ -354,7 +342,7 @@ io.on('connection', function(socket){
 				if(arr.length > 0){
 					var packet = arr.pop();
 					serviceSocket.write(packet);
-					//console.log(bufPrint(packet));
+					//console.log(bufutil.bufPrint(packet));
 					setTimeout(SendPackets, 500, arr, accountInfo, serviceSocket);
 				}
 			}
@@ -393,16 +381,16 @@ function HandleSend(packet, accountInfo, proxySocket, serviceSocket){
 		return false;
 	case 0x00bf:
 		// emote
-		var emoteId = packet.data[SEND[packet.header].datamap.emoteId.index].value;
+		var emoteId = packet.data[send.SEND[packet.header].datamap.emoteId.index].value;
 		console.log('emoteId', emoteId);
 		
         if(bNodelayEnabled){
             
             if(emoteId === 36){
                 // use force Stand instead, useful when sitting while hidden
-                //var castZenPacket = CreateSendPacketBuffer(0x0113, {lv: 1, skillId: 401, targetId: accountInfo.accountId});
-                var forceStandPacket = CreateSendPacketBuffer(0x0089, {ID: 0, type: 3});
-                var resetEmotePacket = CreateRecvPacketBuffer(0x00c0, {ID: accountInfo.accountId, type: 255});
+                //var castZenPacket = send.CreateSendPacketBuffer(0x0113, {lv: 1, skillId: 401, targetId: accountInfo.accountId});
+                var forceStandPacket = send.CreateSendPacketBuffer(0x0089, {ID: 0, type: 3});
+                var resetEmotePacket = recv.CreateRecvPacketBuffer(0x00c0, {ID: accountInfo.accountId, type: 255});
                 serviceSocket.write(forceStandPacket);
                 proxySocket.write(resetEmotePacket);
                 return false;
@@ -425,10 +413,10 @@ function HandleSend(packet, accountInfo, proxySocket, serviceSocket){
 		// skill use location
 		accountInfo.navInterrupted = true;
 	
-		var skillId = packet.data[SEND[packet.header].datamap.skillId.index].value;
-		var lv = packet.data[SEND[packet.header].datamap.lv.index].value;
-		var x = packet.data[SEND[packet.header].datamap.x.index].value;
-		var y = packet.data[SEND[packet.header].datamap.y.index].value;
+		var skillId = packet.data[send.SEND[packet.header].datamap.skillId.index].value;
+		var lv = packet.data[send.SEND[packet.header].datamap.lv.index].value;
+		var x = packet.data[send.SEND[packet.header].datamap.x.index].value;
+		var y = packet.data[send.SEND[packet.header].datamap.y.index].value;
 		//console.log(skillId);
 		
 		if(skillId == 2300 && lv == 2){ // Dimension Door level 2
@@ -442,10 +430,10 @@ function HandleSend(packet, accountInfo, proxySocket, serviceSocket){
 			//console.log(x, y, accountInfo.x, accountInfo.y, angle, direction);	
 
 			
-			var lookat = CreateSendPacketBuffer(0x0361, {head: 0, body: direction});
+			var lookat = send.CreateSendPacketBuffer(0x0361, {head: 0, body: direction});
 			
 		
-			var backslide = CreateSendPacketBuffer(0x0113, {lv: 1, skillId: 150, targetId: accountInfo.accountId});
+			var backslide = send.CreateSendPacketBuffer(0x0113, {lv: 1, skillId: 150, targetId: accountInfo.accountId});
 			
 			serviceSocket.write(lookat);
 			serviceSocket.write(backslide);
@@ -455,7 +443,7 @@ function HandleSend(packet, accountInfo, proxySocket, serviceSocket){
 		}
 		if(skillId == 2483 && lv == 9){ // crazy vines 9
 		
-			var actorMovementInterruptedPacket = CreateRecvPacketBuffer(0x08d2, {ID: accountInfo.accountId, x: x, y: y});
+			var actorMovementInterruptedPacket = recv.CreateRecvPacketBuffer(0x08d2, {ID: accountInfo.accountId, x: x, y: y});
 			// 0x0087 character moves
 			proxySocket.write(actorMovementInterruptedPacket);
 			
@@ -469,9 +457,9 @@ function HandleSend(packet, accountInfo, proxySocket, serviceSocket){
 	
 	
 	
-	if(SENDMOD.hasOwnProperty(packet.header) && SEND.hasOwnProperty(packet.header)){
-		var modDefinitionList = SENDMOD[packet.header];
-		var packetDefinition = SEND[packet.header];
+	if(sendmod.SENDMOD.hasOwnProperty(packet.header) && send.SEND.hasOwnProperty(packet.header)){
+		var modDefinitionList = sendmod.SENDMOD[packet.header];
+		var packetDefinition = send.SEND[packet.header];
 		//console.log(modDefinitionList);
 		
 		// check each filter
@@ -482,7 +470,7 @@ function HandleSend(packet, accountInfo, proxySocket, serviceSocket){
 			
 			if(modDefinition.useAccount.field !== null){
 				var dataInfo = packetDefinition.datamap[modDefinition.useAccount.field];
-				var value = HexStringToInt(packet.bytes.slice(dataInfo.start, dataInfo.end));
+				var value = parse.HexStringToInt(packet.bytes.slice(dataInfo.start, dataInfo.end));
 				if((value != accountInfo.accountId && modDefinition.useAccount.useMine) ||
 					(value == accountInfo.accountId && !modDefinition.useAccount.useMine)){
 					continue;
@@ -494,7 +482,7 @@ function HandleSend(packet, accountInfo, proxySocket, serviceSocket){
 				// get start/end and read in
 				var dataInfo = packetDefinition.datamap[key];
 				// TODO: assume type INT for now
-				var value = HexStringToInt(packet.bytes.slice(dataInfo.start, dataInfo.end));
+				var value = parse.HexStringToInt(packet.bytes.slice(dataInfo.start, dataInfo.end));
 				
 				var expected = modDefinition.filter[key];
 				if(typeof(expected) == 'function'){
@@ -527,7 +515,7 @@ function HandleSend(packet, accountInfo, proxySocket, serviceSocket){
 					continue;
 				}
 				switch(response.type){
-				case RES_MODIFY:
+				case recvmod.RES_MODIFY:
 					// modify everything in data
 					for(var key in response.data){
 						var dataInfo = packetDefinition.datamap[key];
@@ -538,12 +526,12 @@ function HandleSend(packet, accountInfo, proxySocket, serviceSocket){
 						}
 					}
 					break;
-				case RES_DROP:
+				case recvmod.RES_DROP:
 					// do not write this packet
 					dropPacket = true;
-					//console.log('dropping packet ', bufPrint(packet.bytes));
+					//console.log('dropping packet ', bufutil.bufPrint(packet.bytes));
 					break;
-				case RES_CLIENT:
+				case recvmod.RES_CLIENT:
 					// write this to client after a given delay
 					
 					var delay = 0;
@@ -568,7 +556,7 @@ function HandleSend(packet, accountInfo, proxySocket, serviceSocket){
 					else if(modifiedResponse.useMine !== undefined && !modifiedResponse.useMine && modifiedResponse.inField !== undefined && modifiedResponse.inField !== undefined){
 						//var inFieldData = response.data[modifiedResponse.inField]
 						
-						var inFieldData = packet.data[RECV[packet.header].datamap[modifiedResponse.inField].index].value;
+						var inFieldData = packet.data[recv.RECV[packet.header].datamap[modifiedResponse.inField].index].value;
 						if(typeof(modifiedResponse.outField) === 'string'){
 							modifiedResponse.data[modifiedResponse.outField] = inFieldData;
 						}
@@ -581,14 +569,14 @@ function HandleSend(packet, accountInfo, proxySocket, serviceSocket){
 					}
 					
 					var sendClientPacket = _.bind(function(){
-						var clientPacket = CreateRecvPacketBuffer(this.send, this.data);
+						var clientPacket = recv.CreateRecvPacketBuffer(this.send, this.data);
 						proxySocket.write(clientPacket);
 					}, modifiedResponse);
 					
 					setTimeout(sendClientPacket, delay);
 				
 					break;
-				case RES_SERVER:
+				case recvmod.RES_SERVER:
 					// write this to client after a given delay
 					//console.log('sending to server')
 					
@@ -614,7 +602,7 @@ function HandleSend(packet, accountInfo, proxySocket, serviceSocket){
 					else if(modifiedResponse.useMine !== undefined && !modifiedResponse.useMine && modifiedResponse.inField !== undefined && modifiedResponse.inField !== undefined){
 						//var inFieldData = response.data[modifiedResponse.inField]
 						//console.log(packet);
-						var inFieldData = packet.data[SEND[packet.header].datamap[modifiedResponse.inField].index].value;
+						var inFieldData = packet.data[send.SEND[packet.header].datamap[modifiedResponse.inField].index].value;
 						if(typeof(modifiedResponse.outField) === 'string'){
 							modifiedResponse.data[modifiedResponse.outField] = inFieldData;
 						}
@@ -627,7 +615,7 @@ function HandleSend(packet, accountInfo, proxySocket, serviceSocket){
 					}
 					
 					var sendServerPacket = _.bind(function(){
-						var serverPacket = CreateSendPacketBuffer(this.send, this.data);
+						var serverPacket = send.CreateSendPacketBuffer(this.send, this.data);
 						//console.log(serverPacket);
 						serviceSocket.write(serverPacket);
 					}, modifiedResponse);
@@ -659,17 +647,17 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 		// [0c 01] [ account id]
 		// MVP notification
 		// do this when important items show up
-		var itemId = packet.data[RECV[packet.header].datamap.itemId.index].value;
+		var itemId = packet.data[recv.RECV[packet.header].datamap.itemId.index].value;
 		
 		if(bNodelayEnabled && rareitem.hasOwnProperty(itemId)){
-			var playMVPeffect = CreateRecvPacketBuffer(0x010c, {ID: accountInfo.accountId});
+			var playMVPeffect = recv.CreateRecvPacketBuffer(0x010c, {ID: accountInfo.accountId});
 			proxySocket.write(playMVPeffect);
 		}
 		
 		break;
 	case 0x0080:
 		// actor_died_or_disappeared
-		var accountId = packet.data[RECV[packet.header].datamap.ID.index].value;
+		var accountId = packet.data[recv.RECV[packet.header].datamap.ID.index].value;
 		
 		if(accountId in inspirationTargets){
 			clearTimeout(inspirationTargets[accountId]);
@@ -680,7 +668,7 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 	case 0x0087:
 		// Started walking
 		var ping = 50;
-		var coordpair = packet.data[RECV[packet.header].datamap.coords.index].value;
+		var coordpair = packet.data[recv.RECV[packet.header].datamap.coords.index].value;
 		var srcX = coordpair.x1;
 		var srcY = coordpair.y1;
 		var dstX = coordpair.x2;
@@ -699,8 +687,8 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 		var distance = path1 + path2;//Math.sqrt((dstX - srcX) * (dstX - srcX) + (dstY - srcY) * (dstY - srcY));
 		
 		//console.log(distance);
-		//var assumptioPacket = CreateRecvPacketBuffer(0x011a, {skillId: 361, amount: 1, targetId: 1851380, sourceId: 1851380, success: 1});
-		//console.log(bufPrint(assumptioPacket));
+		//var assumptioPacket = recv.CreateRecvPacketBuffer(0x011a, {skillId: 361, amount: 1, targetId: 1851380, sourceId: 1851380, success: 1});
+		//console.log(bufutil.bufPrint(assumptioPacket));
 		
 		// rough approximation
 		setTimeout(function(){
@@ -716,8 +704,8 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 		break;
 	case 0x00b0:
 		// status update
-		var type = packet.data[RECV[packet.header].datamap.type.index].value;
-		var val = packet.data[RECV[packet.header].datamap.val.index].value;
+		var type = packet.data[recv.RECV[packet.header].datamap.type.index].value;
+		var val = packet.data[recv.RECV[packet.header].datamap.val.index].value;
 		
 		switch(type){
 		case 0:
@@ -731,7 +719,7 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 			accountInfo.currentHp = val;
 			
 			if(direction < 0 && accountInfo.currentHp / accountInfo.maxHp <= 0.6){
-				//var playLaughSound = CreateRecvPacketBuffer(0x01c8, {index: 200, itemId: 12027, ID: accountInfo.accountId, remaining: 0, success: 1});
+				//var playLaughSound = recv.CreateRecvPacketBuffer(0x01c8, {index: 200, itemId: 12027, ID: accountInfo.accountId, remaining: 0, success: 1});
 				//proxySocket.write(playLaughSound);
 				PlayVoice('critical');
 			}
@@ -763,12 +751,12 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 		// skill cast
 		
 		// if someone snaps off screen, fix "ghosting"
-		var sourceId = packet.data[RECV[packet.header].datamap.sourceId.index].value;
-		var targetId = packet.data[RECV[packet.header].datamap.targetId.index].value;
-		var x = packet.data[RECV[packet.header].datamap.x.index].value;
-		var y = packet.data[RECV[packet.header].datamap.y.index].value;
-		var skillId = packet.data[RECV[packet.header].datamap.skillId.index].value;
-		var wait = packet.data[RECV[packet.header].datamap.wait.index].value;
+		var sourceId = packet.data[recv.RECV[packet.header].datamap.sourceId.index].value;
+		var targetId = packet.data[recv.RECV[packet.header].datamap.targetId.index].value;
+		var x = packet.data[recv.RECV[packet.header].datamap.x.index].value;
+		var y = packet.data[recv.RECV[packet.header].datamap.y.index].value;
+		var skillId = packet.data[recv.RECV[packet.header].datamap.skillId.index].value;
+		var wait = packet.data[recv.RECV[packet.header].datamap.wait.index].value;
 		
 		// If I cast masq on someone in inspiration
 		var Masqs = new Set([2292, 2293, 2294, 2295, 2296, 2297]);
@@ -783,8 +771,8 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 //		if(accountInfo.accountId !== sourceId && skillId === 264 /* Snap */){
 //			if(Math.abs(x - accountInfo.x) >= 15 || Math.abs(y - accountInfo.y) >= 15){
 //				// create the actor_died_or_disappeared packet
-//				var highJumpPacket = CreateRecvPacketBuffer(0x08d2, {ID: sourceId, x: x, y: y});
-//				var actorDisappearedPacket = CreateRecvPacketBuffer(0x0080, {ID: sourceId, type: 0});
+//				var highJumpPacket = recv.CreateRecvPacketBuffer(0x08d2, {ID: sourceId, x: x, y: y});
+//				var actorDisappearedPacket = recv.CreateRecvPacketBuffer(0x0080, {ID: sourceId, type: 0});
 //				proxySocket.write(highJumpPacket);
 //				proxySocket.write(actorDisappearedPacket);
 //				//console.log('removing snapped target');
@@ -829,9 +817,9 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 		break;
 	case 0x0088:
 		//actor_movement_interrupted
-		var actorId = packet.data[RECV[packet.header].datamap.ID.index].value;
-		var x = packet.data[RECV[packet.header].datamap.x.index].value;
-		var y = packet.data[RECV[packet.header].datamap.y.index].value;
+		var actorId = packet.data[recv.RECV[packet.header].datamap.ID.index].value;
+		var x = packet.data[recv.RECV[packet.header].datamap.x.index].value;
+		var y = packet.data[recv.RECV[packet.header].datamap.y.index].value;
 		
 		if(actorId !== accountInfo.accountId && bNodelayEnabled){
 			dropPacket = true;
@@ -844,9 +832,9 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 	case 0x01ff:
 	//case 0x0088:
 		//being_slide
-		var actorId = packet.data[RECV[packet.header].datamap.ID.index].value;
-		var x = packet.data[RECV[packet.header].datamap.x.index].value;
-		var y = packet.data[RECV[packet.header].datamap.y.index].value;
+		var actorId = packet.data[recv.RECV[packet.header].datamap.ID.index].value;
+		var x = packet.data[recv.RECV[packet.header].datamap.x.index].value;
+		var y = packet.data[recv.RECV[packet.header].datamap.y.index].value;
 		
 		if(actorId == accountInfo.accountId){
 			if(accountInfo.accountId == gAccountId){
@@ -858,7 +846,7 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 		else{
 			// Change to snap animation to make it easier on the eyes
 			if(bNodelayEnabled){
-				var highJumpPacket = CreateRecvPacketBuffer(0x08d2, {ID: actorId, x: x, y: y});
+				var highJumpPacket = recv.CreateRecvPacketBuffer(0x08d2, {ID: actorId, x: x, y: y});
 				proxySocket.write(highJumpPacket);
 				//console.log('replacing with snap?');
 				
@@ -870,20 +858,20 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 	case 0x0091:
 	case 0x0092:
 		// map changed, tell webpage?
-		var mapName = packet.data[RECV[packet.header].datamap.map.index].value.replace('.gat', '');
-		var x = packet.data[RECV[packet.header].datamap.x.index].value;
-		var y = packet.data[RECV[packet.header].datamap.y.index].value;
+		var mapName = packet.data[recv.RECV[packet.header].datamap.map.index].value.replace('.gat', '');
+		var x = packet.data[recv.RECV[packet.header].datamap.x.index].value;
+		var y = packet.data[recv.RECV[packet.header].datamap.y.index].value;
 		ChangeMap({'name': mapName, 'x': x, 'y': y});
 		
 		break;
 	case 0x01e9:
 		// party join, use to determine which map you log in at
-		var accountId = packet.data[RECV[packet.header].datamap.ID.index].value;
+		var accountId = packet.data[recv.RECV[packet.header].datamap.ID.index].value;
 		if(accountId == accountInfo.accountId){
-			var x = packet.data[RECV[packet.header].datamap.x.index].value;
-			var y = packet.data[RECV[packet.header].datamap.y.index].value;
-			var mapName = packet.data[RECV[packet.header].datamap.map.index].value.replace('.gat', '');
-			var user = packet.data[RECV[packet.header].datamap.user.index].value;
+			var x = packet.data[recv.RECV[packet.header].datamap.x.index].value;
+			var y = packet.data[recv.RECV[packet.header].datamap.y.index].value;
+			var mapName = packet.data[recv.RECV[packet.header].datamap.map.index].value.replace('.gat', '');
+			var user = packet.data[recv.RECV[packet.header].datamap.user.index].value;
 			
 			accountInfo.name = user;
 			ChangeMap({'name': mapName, 'x': x, 'y': y});
@@ -892,7 +880,7 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 		break;
 	case 0x0283:
 		// set accountId
-		var dataIndex = RECV[packet.header].datamap.ID.index;
+		var dataIndex = recv.RECV[packet.header].datamap.ID.index;
 		var accountId = packet.data[dataIndex].value;
 		accountInfo.accountId = accountId;
 		
@@ -903,10 +891,10 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 		break;
 	case 0x01c8:
 		// use item
-        var accountID = packet.data[RECV[packet.header].datamap.ID.index].value;
-		var itemId = packet.data[RECV[packet.header].datamap.itemId.index].value;
-		var itemIndex = packet.data[RECV[packet.header].datamap.index.index].value;
-		var remaining = packet.data[RECV[packet.header].datamap.remaining.index].value;
+        var accountID = packet.data[recv.RECV[packet.header].datamap.ID.index].value;
+		var itemId = packet.data[recv.RECV[packet.header].datamap.itemId.index].value;
+		var itemIndex = packet.data[recv.RECV[packet.header].datamap.index.index].value;
+		var remaining = packet.data[recv.RECV[packet.header].datamap.remaining.index].value;
 		
 		if(accountID == accountInfo.accountId && accountInfo.inventory.hasOwnProperty(itemId)){
 			var itemInfo = accountInfo.inventory[itemId];
@@ -925,9 +913,9 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 	case 0x043f: // this has more than 3 fields, but we only need to use 3 for now
 		// actor status active
 	
-		var accountId = packet.data[RECV[packet.header].datamap.ID.index].value;
-		var type = packet.data[RECV[packet.header].datamap.type.index].value;
-		var flag = packet.data[RECV[packet.header].datamap.flag.index].value;
+		var accountId = packet.data[recv.RECV[packet.header].datamap.ID.index].value;
+		var type = packet.data[recv.RECV[packet.header].datamap.type.index].value;
+		var flag = packet.data[recv.RECV[packet.header].datamap.flag.index].value;
 		
 		if(accountId !== accountInfo.accountId){ // keep track of opponents
 			if(type === 407){
@@ -940,7 +928,7 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 						//console.log('adding to inspiration', accountId, accountInfo.accountId)
                         
                         if(bNodelayEnabled){
-                            var startInspirationEffect = CreateRecvPacketBuffer(0x0983, {type: INSPIRATION_EFFECT['clear'], ID: accountId, flag: 1});
+                            var startInspirationEffect = recv.CreateRecvPacketBuffer(0x0983, {type: constants.INSPIRATION_EFFECT['clear'], ID: accountId, flag: 1});
                             proxySocket.write(startInspirationEffect);
                         }
                         
@@ -957,7 +945,7 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 					//96 01 7b 00 f3 3a 10 00 00
 					
 					if(bNodelayEnabled){
-						var endInspirationEffect = CreateRecvPacketBuffer(0x0196, {type: INSPIRATION_EFFECT['clear'], ID: accountId, flag: 0});
+						var endInspirationEffect = recv.CreateRecvPacketBuffer(0x0196, {type: constants.INSPIRATION_EFFECT['clear'], ID: accountId, flag: 0});
 						proxySocket.write(endInspirationEffect);
 					}
 				}
@@ -970,9 +958,9 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
         // player_equipment
         //console.log(packet);
         
-		var accountId = packet.data[RECV[packet.header].datamap.sourceId.index].value;
-		var ID1 = packet.data[RECV[packet.header].datamap.ID1.index].value;
-		var ID2 = packet.data[RECV[packet.header].datamap.ID2.index].value;
+		var accountId = packet.data[recv.RECV[packet.header].datamap.sourceId.index].value;
+		var ID1 = packet.data[recv.RECV[packet.header].datamap.ID1.index].value;
+		var ID2 = packet.data[recv.RECV[packet.header].datamap.ID2.index].value;
         
         if(accountId !== accountInfo.accountId){
             // If no shield, turn them red
@@ -983,7 +971,7 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
             if(ID1 == 0 || ID2 == 0){
                 
                 if(bNodelayEnabled){
-                    var startNoshieldEffect = CreateRecvPacketBuffer(0x0983, {type: NOSHIELD_EFFECT['clear'], ID: accountId, flag: 1});
+                    var startNoshieldEffect = recv.CreateRecvPacketBuffer(0x0983, {type: constants.NOSHIELD_EFFECT['clear'], ID: accountId, flag: 1});
                     proxySocket.write(startNoshieldEffect);
                 }
                 
@@ -998,7 +986,7 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
                 //96 01 7b 00 f3 3a 10 00 00
                 
                 if(bNodelayEnabled){
-                    var endImukeEffect = CreateRecvPacketBuffer(0x0196, {type: IMUKE_EFFECT['clear'], ID: accountId, flag: 0});
+                    var endImukeEffect = recv.CreateRecvPacketBuffer(0x0196, {type: constants.IMUKE_EFFECT['clear'], ID: accountId, flag: 0});
                     proxySocket.write(endImukeEffect);
                 }
             }
@@ -1011,7 +999,7 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
                 
                 
                 if(bNodelayEnabled){
-                    var endImukeEffect = CreateRecvPacketBuffer(0x0196, {type: IMUKE_EFFECT['clear'], ID: accountId, flag: 0});
+                    var endImukeEffect = recv.CreateRecvPacketBuffer(0x0196, {type: constants.IMUKE_EFFECT['clear'], ID: accountId, flag: 0});
                     proxySocket.write(endImukeEffect);
                 }
                 
@@ -1020,7 +1008,7 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
                 delete noshieldTargets[accountId];
                 
                 if(bNodelayEnabled){
-                    var endNoshieldEffect = CreateRecvPacketBuffer(0x0196, {type: NOSHIELD_EFFECT['clear'], ID: accountId, flag: 0});
+                    var endNoshieldEffect = recv.CreateRecvPacketBuffer(0x0196, {type: constants.NOSHIELD_EFFECT['clear'], ID: accountId, flag: 0});
                     proxySocket.write(endNoshieldEffect);
                 }
             }
@@ -1028,7 +1016,7 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
             else if(ID2 == 28910){
                 
                 if(bNodelayEnabled){
-                    var startImukeEffect = CreateRecvPacketBuffer(0x0983, {type: IMUKE_EFFECT['clear'], ID: accountId, flag: 1});
+                    var startImukeEffect = recv.CreateRecvPacketBuffer(0x0983, {type: constants.IMUKE_EFFECT['clear'], ID: accountId, flag: 1});
                     proxySocket.write(startImukeEffect);
                 }
                 
@@ -1042,7 +1030,7 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
                 delete noshieldTargets[accountId];
                 
                 if(bNodelayEnabled){
-                    var endNoshieldEffect = CreateRecvPacketBuffer(0x0196, {type: NOSHIELD_EFFECT['clear'], ID: accountId, flag: 0});
+                    var endNoshieldEffect = recv.CreateRecvPacketBuffer(0x0196, {type: constants.NOSHIELD_EFFECT['clear'], ID: accountId, flag: 0});
                     proxySocket.write(endNoshieldEffect);
                 }
                 
@@ -1060,20 +1048,20 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
         // actor_connected
 		// actor_moved
 		// actor_exists
-		var accountId = packet.data[RECV[packet.header].datamap.ID.index].value;
-		var opt3 = packet.data[RECV[packet.header].datamap.opt3.index].value;
-		var type = packet.data[RECV[packet.header].datamap.type.index].value;
-		var guildId = packet.data[RECV[packet.header].datamap.guildId.index].value;
-		var emblemId = packet.data[RECV[packet.header].datamap.emblemId.index].value;
-		var weapon = packet.data[RECV[packet.header].datamap.weapon.index].value;
-		var shield = packet.data[RECV[packet.header].datamap.shield.index].value;
+		var accountId = packet.data[recv.RECV[packet.header].datamap.ID.index].value;
+		var opt3 = packet.data[recv.RECV[packet.header].datamap.opt3.index].value;
+		var type = packet.data[recv.RECV[packet.header].datamap.type.index].value;
+		var guildId = packet.data[recv.RECV[packet.header].datamap.guildId.index].value;
+		var emblemId = packet.data[recv.RECV[packet.header].datamap.emblemId.index].value;
+		var weapon = packet.data[recv.RECV[packet.header].datamap.weapon.index].value;
+		var shield = packet.data[recv.RECV[packet.header].datamap.shield.index].value;
 		
 		if(accountId < 100000){
 			// this is a monster
 			
 			// Change monster sprite if there's a mapping
 			if(bNodelayEnabled && monstermod.hasOwnProperty(type)){
-				var dataInfo = RECV[packet.header].datamap['type'];
+				var dataInfo = recv.RECV[packet.header].datamap['type'];
 				var length = dataInfo.end - dataInfo.start;
 				var value = monstermod[type];
 				for(var i = 0; i < length; i++){
@@ -1088,14 +1076,14 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
             
             // Modify guildId and emblemId if this is an ally
             if(guildId in accountInfo.allies){
-				var dataInfo = RECV[packet.header].datamap['guildId'];
+				var dataInfo = recv.RECV[packet.header].datamap['guildId'];
 				var length = dataInfo.end - dataInfo.start;
 				var value = accountInfo.guildId;
 				for(var i = 0; i < length; i++){
 					packet.bytes[dataInfo.start + i] = (value >> (i * 8)) & 0xff;
 				}
                 
-                dataInfo = RECV[packet.header].datamap['emblemId'];
+                dataInfo = recv.RECV[packet.header].datamap['emblemId'];
 				length = dataInfo.end - dataInfo.start;
 				value = guildId;
 				for(var i = 0; i < length; i++){
@@ -1109,7 +1097,7 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
                 delete imukeTargets[accountId];
                 
                 if(bNodelayEnabled){
-                    var endImukeEffect = CreateRecvPacketBuffer(0x0196, {type: IMUKE_EFFECT['clear'], ID: accountId, flag: 0});
+                    var endImukeEffect = recv.CreateRecvPacketBuffer(0x0196, {type: constants.IMUKE_EFFECT['clear'], ID: accountId, flag: 0});
                     proxySocket.write(endImukeEffect);
                 }
                 
@@ -1133,7 +1121,7 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
                 delete noshieldTargets[accountId];
                 
                 if(bNodelayEnabled){
-                    var endNoshieldEffect = CreateRecvPacketBuffer(0x0196, {type: NOSHIELD_EFFECT['clear'], ID: accountId, flag: 0});
+                    var endNoshieldEffect = recv.CreateRecvPacketBuffer(0x0196, {type: constants.NOSHIELD_EFFECT['clear'], ID: accountId, flag: 0});
                     proxySocket.write(endNoshieldEffect);
                 }
             }
@@ -1144,7 +1132,7 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
                 //96 01 7b 00 f3 3a 10 00 00
                 
                 if(bNodelayEnabled){
-                    var endImukeEffect = CreateRecvPacketBuffer(0x0196, {type: IMUKE_EFFECT['clear'], ID: accountId, flag: 0});
+                    var endImukeEffect = recv.CreateRecvPacketBuffer(0x0196, {type: constants.IMUKE_EFFECT['clear'], ID: accountId, flag: 0});
                     proxySocket.write(endImukeEffect);
                 }
                 
@@ -1153,7 +1141,7 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
                 delete noshieldTargets[accountId];
                 
                 if(bNodelayEnabled){
-                    var endNoshieldEffect = CreateRecvPacketBuffer(0x0196, {type: NOSHIELD_EFFECT['clear'], ID: accountId, flag: 0});
+                    var endNoshieldEffect = recv.CreateRecvPacketBuffer(0x0196, {type: constants.NOSHIELD_EFFECT['clear'], ID: accountId, flag: 0});
                     proxySocket.write(endNoshieldEffect);
                 }
             }
@@ -1163,9 +1151,9 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
                 
                 //console.log('target is in inspiration');
 				
-				var dataInfo = RECV[packet.header].datamap['opt3'];
+				var dataInfo = recv.RECV[packet.header].datamap['opt3'];
 				var length = dataInfo.end - dataInfo.start;
-				var value = opt3 | INSPIRATION_EFFECT['update'];
+				var value = opt3 | constants.INSPIRATION_EFFECT['update'];
 				for(var i = 0; i < length; i++){
 					packet.bytes[dataInfo.start + i] = (value >> (i * 8)) & 0xff;
 				}
@@ -1179,9 +1167,9 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
                 if(!(guildId in accountInfo.allies || (guildId == accountInfo.guildId && accountInfo.guildId !== 0))){
                     //console.log('target is in imuke');
                     
-                    var dataInfo = RECV[packet.header].datamap['opt3'];
+                    var dataInfo = recv.RECV[packet.header].datamap['opt3'];
                     var length = dataInfo.end - dataInfo.start;
-                    var value = opt3 | IMUKE_EFFECT['update'];
+                    var value = opt3 | constants.IMUKE_EFFECT['update'];
                     for(var i = 0; i < length; i++){
                         packet.bytes[dataInfo.start + i] = (value >> (i * 8)) & 0xff;
                     }
@@ -1193,9 +1181,9 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
                 
                 //console.log('target is shieldless');
                 
-                var dataInfo = RECV[packet.header].datamap['opt3'];
+                var dataInfo = recv.RECV[packet.header].datamap['opt3'];
                 var length = dataInfo.end - dataInfo.start;
-                var value = opt3 | NOSHIELD_EFFECT['update'];
+                var value = opt3 | constants.NOSHIELD_EFFECT['update'];
                 for(var i = 0; i < length; i++){
                     packet.bytes[dataInfo.start + i] = (value >> (i * 8)) & 0xff;
                 }
@@ -1207,8 +1195,8 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 		
 		break;
 	case 0x080f:
-//		var itemId = packet.data[RECV[packet.header].datamap.itemId.index].value;
-//		var amount = packet.data[RECV[packet.header].datamap.amount.index].value;
+//		var itemId = packet.data[recv.RECV[packet.header].datamap.itemId.index].value;
+//		var amount = packet.data[recv.RECV[packet.header].datamap.amount.index].value;
 //		
 //		if(accountInfo.inventory.hasOwnProperty(itemId)){
 //			var itemInfo = accountInfo.inventory[itemId];
@@ -1223,8 +1211,8 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 		break;
 	case 0x00f6:
 		// storage item removed
-		var itemIndex = packet.data[RECV[packet.header].datamap.index.index].value;
-		var amount = packet.data[RECV[packet.header].datamap.amount.index].value;
+		var itemIndex = packet.data[recv.RECV[packet.header].datamap.index.index].value;
+		var amount = packet.data[recv.RECV[packet.header].datamap.amount.index].value;
 		
 		if(accountInfo.storageByIndex.hasOwnProperty(itemIndex)){
 			var itemId = accountInfo.storageByIndex[itemIndex];
@@ -1244,8 +1232,8 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 	case 0x00af:
 	case 0x07fa:
 		// inventory item removed
-		var itemIndex = packet.data[RECV[packet.header].datamap.index.index].value;
-		var amount = packet.data[RECV[packet.header].datamap.amount.index].value;
+		var itemIndex = packet.data[recv.RECV[packet.header].datamap.index.index].value;
+		var amount = packet.data[recv.RECV[packet.header].datamap.amount.index].value;
 		
 		if(accountInfo.inventoryByIndex.hasOwnProperty(itemIndex)){
 			var itemId = accountInfo.inventoryByIndex[itemIndex];
@@ -1262,8 +1250,8 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 		break;
 	case 0x0125:
 		// cart item removed
-		var itemIndex = packet.data[RECV[packet.header].datamap.index.index].value;
-		var amount = packet.data[RECV[packet.header].datamap.amount.index].value;
+		var itemIndex = packet.data[recv.RECV[packet.header].datamap.index.index].value;
+		var amount = packet.data[recv.RECV[packet.header].datamap.amount.index].value;
 		
 		if(accountInfo.cartByIndex.hasOwnProperty(itemIndex)){
 			var itemId = accountInfo.cartByIndex[itemIndex];
@@ -1279,10 +1267,10 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 		break;
 	case 0x08d2:
 		// high jump
-		var sourceId = packet.data[RECV[packet.header].datamap.ID.index].value;
+		var sourceId = packet.data[recv.RECV[packet.header].datamap.ID.index].value;
 		if(sourceId == accountInfo.accountId){
-			var x = packet.data[RECV[packet.header].datamap.x.index].value;
-			var y = packet.data[RECV[packet.header].datamap.y.index].value;
+			var x = packet.data[recv.RECV[packet.header].datamap.x.index].value;
+			var y = packet.data[recv.RECV[packet.header].datamap.y.index].value;
 			if(accountInfo.accountId == gAccountId){
 				ChangeLocation({x: x, y: y});
 			}
@@ -1294,9 +1282,9 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 	case 0x0990:
 	case 0x0a0c:
 		// inventory item added
-		var itemIndex = packet.data[RECV[packet.header].datamap.index.index].value;
-		var itemId = packet.data[RECV[packet.header].datamap.itemId.index].value
-		var amount = packet.data[RECV[packet.header].datamap.amount.index].value;
+		var itemIndex = packet.data[recv.RECV[packet.header].datamap.index.index].value;
+		var itemId = packet.data[recv.RECV[packet.header].datamap.itemId.index].value
+		var amount = packet.data[recv.RECV[packet.header].datamap.amount.index].value;
 		
 		
 		//console.log(packet.data);
@@ -1316,9 +1304,9 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 	case 0x01c5:
 	case 0x0a0b:
 		// cart item added
-		var itemIndex = packet.data[RECV[packet.header].datamap.index.index].value;
-		var itemId = packet.data[RECV[packet.header].datamap.itemId.index].value
-		var amount = packet.data[RECV[packet.header].datamap.amount.index].value;
+		var itemIndex = packet.data[recv.RECV[packet.header].datamap.index.index].value;
+		var itemId = packet.data[recv.RECV[packet.header].datamap.itemId.index].value
+		var amount = packet.data[recv.RECV[packet.header].datamap.amount.index].value;
 		
 		
 		//console.log(packet.data);
@@ -1341,7 +1329,7 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 		accountInfo.inventory = {};
 		accountInfo.inventoryByIndex = {};
 		
-		var dataIndex = RECV[packet.header].datamap.itemInfo.index;
+		var dataIndex = recv.RECV[packet.header].datamap.itemInfo.index;
 		var itemInfoList = packet.data[dataIndex].value;
 		for(var i = 0; i < itemInfoList.length; i++){
 			var itemInfo = itemInfoList[i];
@@ -1350,7 +1338,7 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 			var index = itemInfo[0].value;
 			var itemId = itemInfo[1].value;
 			var amount = itemInfo[3].value;
-			var itemName = DbTable_Items[itemId];
+			//var itemName = DbTable_Items[itemId];
 			//console.log(index, itemId, itemName, amount);
 			accountInfo.inventory[itemId] = {index: index, amount: amount};
 			accountInfo.inventoryByIndex[index] = itemId;
@@ -1360,7 +1348,7 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 		if(accountInfo.accountId && accountInfo.inventory.hasOwnProperty(512) && accountInfo.inventory[512].amount > 0){
 			var itemInfo = accountInfo.inventory[512];
 			var useItemPacket = CreatePacketBuffer(0x00a7, {index: itemInfo.index, targetId: accountInfo.accountId});
-			//console.log(bufPrint(useItemPacket));
+			//console.log(bufutil.bufPrint(useItemPacket));
 			serviceSocket.write(useItemPacket);
 		}
 		*/
@@ -1373,7 +1361,7 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 		
 		accountInfo.isStorageOpen = true;
 		
-		var itemInfoList = packet.data[RECV[packet.header].datamap.itemInfo.index].value;
+		var itemInfoList = packet.data[recv.RECV[packet.header].datamap.itemInfo.index].value;
 		for(var i = 0; i < itemInfoList.length; i++){
 			var itemInfo = itemInfoList[i];
 			
@@ -1393,7 +1381,7 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 		//console.log(accountInfo.name);
 		if(accountInfo.name !== null && refill.hasOwnProperty(accountInfo.name)){
 			var refillData = refill[accountInfo.name];
-			var storagePackets = storageRefill(refillData, accountInfo);
+			var storagePackets = itemutil.storageRefill(refillData, accountInfo);
 			
 			if(storagePackets.length > 0){
 				var SendPackets = function(arr, accountInfo){
@@ -1403,7 +1391,7 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 					if(arr.length > 0){
 						var packet = arr.pop();
 						serviceSocket.write(packet);
-						//console.log(bufPrint(packet));
+						//console.log(bufutil.bufPrint(packet));
 						setTimeout(SendPackets, 500, arr, accountInfo);
 					}
 				}
@@ -1416,7 +1404,7 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 		if(accountInfo.accountId && accountInfo.storage.hasOwnProperty(512) && accountInfo.storage[512].amount > 0){
 			var itemInfo = accountInfo.storage[512];
 			var useItemPacket = CreatePacketBuffer(0x00a7, {index: itemInfo.index, targetId: accountInfo.accountId});
-			//console.log(bufPrint(useItemPacket));
+			//console.log(bufutil.bufPrint(useItemPacket));
 			serviceSocket.write(useItemPacket);
 		}
 		*/
@@ -1428,7 +1416,7 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 		accountInfo.cart = {};
 		accountInfo.cartByIndex = {};
 		
-		var itemInfoList = packet.data[RECV[packet.header].datamap.itemInfo.index].value;
+		var itemInfoList = packet.data[recv.RECV[packet.header].datamap.itemInfo.index].value;
 		for(var i = 0; i < itemInfoList.length; i++){
 			var itemInfo = itemInfoList[i];
 			
@@ -1450,7 +1438,7 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 		
 		// TODO: Finish this in order to vend
 		
-		var itemInfoList = packet.data[RECV[packet.header].datamap.itemInfo.index].value;
+		var itemInfoList = packet.data[recv.RECV[packet.header].datamap.itemInfo.index].value;
 		for(var i = 0; i < itemInfoList.length; i++){
 			var itemInfo = itemInfoList[i];
 			
@@ -1473,7 +1461,7 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
         // guild_name
         
         // TODO: Join/Leave guild
-		var guildId = packet.data[RECV[packet.header].datamap.guildId.index].value;
+		var guildId = packet.data[recv.RECV[packet.header].datamap.guildId.index].value;
         accountInfo.guildId = guildId;
         break;
         
@@ -1481,7 +1469,7 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
         // guild_allies_enemies_list
         accountInfo.allies = {};
         
-		var guildInfoList = packet.data[RECV[packet.header].datamap.guildInfo.index].value;
+		var guildInfoList = packet.data[recv.RECV[packet.header].datamap.guildInfo.index].value;
         
         for(var i = 0; i < guildInfoList.length; i++){
             var guildInfo = guildInfoList[i];
@@ -1497,8 +1485,8 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
         break;
     case 0x0184:
         // guild unally
-		var type = packet.data[RECV[packet.header].datamap.type.index].value;
-		var guildId = packet.data[RECV[packet.header].datamap.guildId.index].value;
+		var type = packet.data[recv.RECV[packet.header].datamap.type.index].value;
+		var guildId = packet.data[recv.RECV[packet.header].datamap.guildId.index].value;
         
         if(type == 0 && guildId in accountInfo.allies){
             delete accountInfo.allies[guildId];
@@ -1507,8 +1495,8 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
         break;
     case 0x0185:
         // guild ally
-		var type = packet.data[RECV[packet.header].datamap.type.index].value;
-		var guildId = packet.data[RECV[packet.header].datamap.guildId.index].value;
+		var type = packet.data[recv.RECV[packet.header].datamap.type.index].value;
+		var guildId = packet.data[recv.RECV[packet.header].datamap.guildId.index].value;
         
         if(type == 0){
             accountInfo.allies[guildId] = true;
@@ -1521,10 +1509,10 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 	}
 	
 	// if it has a response to this defined
-	if(RECVMOD.hasOwnProperty(packet.header) && RECV.hasOwnProperty(packet.header)){
+	if(recvmod.RECVMOD.hasOwnProperty(packet.header) && recv.RECV.hasOwnProperty(packet.header)){
 	
-		var modDefinitionList = RECVMOD[packet.header];
-		var packetDefinition = RECV[packet.header];
+		var modDefinitionList = recvmod.RECVMOD[packet.header];
+		var packetDefinition = recv.RECV[packet.header];
 		
 		// check each filter
 		
@@ -1534,7 +1522,7 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 			
 			if(modDefinition.useAccount.field !== null){
 				var dataInfo = packetDefinition.datamap[modDefinition.useAccount.field];
-				var value = HexStringToInt(packet.bytes.slice(dataInfo.start, dataInfo.end));
+				var value = parse.HexStringToInt(packet.bytes.slice(dataInfo.start, dataInfo.end));
 				if((value != accountInfo.accountId && modDefinition.useAccount.useMine) ||
 					(value == accountInfo.accountId && !modDefinition.useAccount.useMine)){
 					continue;
@@ -1547,7 +1535,7 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 				// get start/end and read in
 				var dataInfo = packetDefinition.datamap[key];
 				// TODO: assume type INT for now
-				var value = HexStringToInt(packet.bytes.slice(dataInfo.start, dataInfo.end));
+				var value = parse.HexStringToInt(packet.bytes.slice(dataInfo.start, dataInfo.end));
 				
 				var expected = modDefinition.filter[key];
 				if(typeof(expected) == 'function'){
@@ -1580,7 +1568,7 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 					continue;
 				}
 				switch(response.type){
-				case RES_MODIFY:
+				case recvmod.RES_MODIFY:
 					// modify everything in data
 					for(var key in response.data){
 						var dataInfo = packetDefinition.datamap[key];
@@ -1591,12 +1579,12 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 						}
 					}
 					break;
-				case RES_DROP:
+				case recvmod.RES_DROP:
 					// do not write this packet
 					dropPacket = true;
-					//console.log('dropping packet ', bufPrint(packet.bytes));
+					//console.log('dropping packet ', bufutil.bufPrint(packet.bytes));
 					break;
-				case RES_CLIENT:
+				case recvmod.RES_CLIENT:
 					// write this to client after a given delay
 					
 					var delay = 0;
@@ -1621,7 +1609,7 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 					if(modifiedResponse.inField !== undefined && modifiedResponse.outField !== undefined){
 						//var inFieldData = response.data[modifiedResponse.inField]
 						
-						var inFieldData = packet.data[RECV[packet.header].datamap[modifiedResponse.inField].index].value;
+						var inFieldData = packet.data[recv.RECV[packet.header].datamap[modifiedResponse.inField].index].value;
 						if(typeof(modifiedResponse.outField) === 'string'){
 							modifiedResponse.data[modifiedResponse.outField] = inFieldData;
 						}
@@ -1634,14 +1622,14 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 					}
 					
 					var sendClientPacket = _.bind(function(){
-						var clientPacket = CreateRecvPacketBuffer(this.send, this.data);
+						var clientPacket = recv.CreateRecvPacketBuffer(this.send, this.data);
 						proxySocket.write(clientPacket);
 					}, modifiedResponse);
 					
 					setTimeout(sendClientPacket, delay);
 				
 					break;
-				case RES_SERVER:
+				case recvmod.RES_SERVER:
 					// write this to client after a given delay
 					//console.log('sending to server')
 					
@@ -1667,7 +1655,7 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 					if(modifiedResponse.inField !== undefined && modifiedResponse.outField !== undefined){
 						//var inFieldData = response.data[modifiedResponse.inField]
 						
-						var inFieldData = packet.data[RECV[packet.header].datamap[modifiedResponse.inField].index].value;
+						var inFieldData = packet.data[recv.RECV[packet.header].datamap[modifiedResponse.inField].index].value;
 						if(typeof(modifiedResponse.outField) === 'string'){
 							modifiedResponse.data[modifiedResponse.outField] = inFieldData;
 						}
@@ -1680,7 +1668,7 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 					}
 					
 					var sendServerPacket = _.bind(function(){
-						var serverPacket = CreateSendPacketBuffer(this.send, this.data);
+						var serverPacket = send.CreateSendPacketBuffer(this.send, this.data);
 						//console.log(serverPacket);
 						serviceSocket.write(serverPacket);
 					}, modifiedResponse);
@@ -1689,7 +1677,7 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 				
 					break;
 					
-				case RES_SPEECH:
+				case recvmod.RES_SPEECH:
 					var delay = 0;
 					if(response.delay !== undefined){
 						delay = response.delay;
@@ -1763,8 +1751,8 @@ function CreateRequest(host, port)
 		var buffers = new Array();
 		var serviceSocket = new net.Socket();
 		var accountInfo = new AccountInfo();
-		var PACKET_RECV_BUFFER = new PacketBuffer(RECV, 1);
-		var PACKET_SEND_BUFFER = new PacketBuffer(SEND, 1);
+		var PACKET_RECV_BUFFER = new parse.PacketBuffer(recv.RECV, 1);
+		var PACKET_SEND_BUFFER = new parse.PacketBuffer(send.SEND, 1);
 		
 		serviceSocket.connect(parseInt(port), host, function() {
 			connected = true;
@@ -1773,7 +1761,7 @@ function CreateRequest(host, port)
 			if (buffers.length > 0) {
 				for (i = 0; i < buffers.length; i++) {
 					//console.log(buffers[i]);
-					if(bufCompare(tcpConnectionStart, buffers[i]))
+					if(bufutil.bufCompare(tcpConnectionStart, buffers[i]))
 						continue;
 					serviceSocket.write(buffers[i]);
 				}
@@ -1793,7 +1781,7 @@ function CreateRequest(host, port)
 			proxySocket.end();
 		});
 		proxySocket.on("data", function (data) {
-			if(bufCompare(tcpConnectionStart, data))
+			if(bufutil.bufCompare(tcpConnectionStart, data))
 				return;
 
 			if (connected) {
@@ -1806,7 +1794,7 @@ function CreateRequest(host, port)
 				while(packet !== null){
 					// Log the unmodified packet
 					if(bSendLoggingEnabled  && accountInfo.accountId == gAccountId) {
-						SendToWeb('log send', bufToList(packet.bytes));
+						SendToWeb('log send', bufutil.bufToList(packet.bytes));
 					}
 					
 					Log(2, accountInfo.accountId, packet.bytes);
@@ -1824,7 +1812,7 @@ function CreateRequest(host, port)
 					if(packetNum > kMaxNumPackets){
 						// remove whatever packets are in the buffer
 						console.log('Too many packets, might have been infinite looping');
-						console.log(bufPrint(PACKET_SEND_BUFFER.buffer));
+						console.log(bufutil.bufPrint(PACKET_SEND_BUFFER.buffer));
 						PACKET_SEND_BUFFER.buffer = null;
 					}
 				}
@@ -1833,7 +1821,7 @@ function CreateRequest(host, port)
 			
 			
 				//if(bSendLoggingEnabled && accountInfo.accountId == gAccountId) {
-				//	SendToWeb('log send', bufToList(data));
+				//	SendToWeb('log send', bufutil.bufToList(data));
 				//}
 				//serviceSocket.write(data);
 			} else {
@@ -1858,7 +1846,7 @@ function CreateRequest(host, port)
 			while(packet !== null){
 				// Log the unmodified packet
 				if(bRecvLoggingEnabled  && accountInfo.accountId == gAccountId) {
-					SendToWeb('log recv', bufToList(packet.bytes));
+					SendToWeb('log recv', bufutil.bufToList(packet.bytes));
 				}
 				
 				Log(1, accountInfo.accountId, packet.bytes);
@@ -1875,7 +1863,7 @@ function CreateRequest(host, port)
 				if(packetNum > kMaxNumPackets){
 					// remove whatever packets are in the buffer
 					console.log('Too many packets, might have been infinite looping');
-					console.log(bufPrint(PACKET_RECV_BUFFER.buffer));
+					console.log(bufutil.bufPrint(PACKET_RECV_BUFFER.buffer));
 					PACKET_RECV_BUFFER.buffer = null;
 				}
 			}
@@ -1911,7 +1899,7 @@ function LogRequest(host)
 		var buffers = new Array();
 		var serviceSocket = new net.Socket();
 		
-		var helloMessage = StringToBuffer(AsciiToHex(LOG_CONNECTION_PASSWORD).join(' '));
+		var helloMessage = bufutil.StringToBuffer(parse.AsciiToHex(constants.LOG_CONNECTION_PASSWORD).join(' '));
 		
 		logSocket.on("error", function (e) {
 			console.log('Log server error', e);
@@ -1927,7 +1915,7 @@ function LogRequest(host)
 			console.log('log data', data);
 			console.log('compare to', helloMessage);
 			// Look for Hello message?
-			if(bufCompare(data, helloMessage)){
+			if(bufutil.bufCompare(data, helloMessage)){
 				console.log('Log server connected');
 				LogServer = logSocket;
 			}
@@ -1975,7 +1963,7 @@ function Log(type, ID, bytes){
 			ID = 0;
 		}
 		var bufferLength = 8 + bytes.length;
-		var logPacket = CreateLogPacketBuffer(header, {len: bufferLength, ID: ID, data: bytes}, bufferLength);
+		var logPacket = logmessage.CreateLogPacketBuffer(header, {len: bufferLength, ID: ID, data: bytes}, bufferLength);
 		LogServer.write(logPacket);
 	}
 }
@@ -1986,12 +1974,12 @@ function LogDebug(ID, message){
 		if (ID === undefined || ID === null){
 			ID = 0;
 		}
-        var messageBuffer = StringToBuffer(AsciiToHex(message).join(' '));
+        var messageBuffer = bufutil.StringToBuffer(parse.AsciiToHex(message).join(' '));
 		var debugLength = message.length + 5;
-		var debugPacket = CreateLogPacketBuffer(0x0007, {len: debugLength, message: messageBuffer}, debugLength);
+		var debugPacket = logmessage.CreateLogPacketBuffer(0x0007, {len: debugLength, message: messageBuffer}, debugLength);
         
 		var bufferLength = 8 + debugPacket.length;
-		var logPacket = CreateLogPacketBuffer(header, {len: bufferLength, ID: ID, data: debugPacket}, bufferLength);
+		var logPacket = logmessage.CreateLogPacketBuffer(header, {len: bufferLength, ID: ID, data: debugPacket}, bufferLength);
 		LogServer.write(logPacket);
 	}
 }

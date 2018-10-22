@@ -1,3 +1,7 @@
+'use strict';
+
+var bufutil = require('./bufutil');
+
 var LOGMESSAGE = {
 	0x0001: {
 		name: 'recv packet', 
@@ -99,7 +103,7 @@ function CreateLogPacketBuffer(header, data, len){
 			for(var i = 2; i < length; i++){
 				buf[i] = 0;
 			}
-			return _CreatePacket(buf, packetDef, data);
+			return bufutil._CreatePacket(buf, packetDef, data);
 		}
 	}
 	else{
