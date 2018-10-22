@@ -1995,34 +1995,28 @@ function LogDebug(ID, message){
 		LogServer.write(logPacket);
 	}
 }
+
+fs.readFile('proxyservers.txt', 'utf8', function(err, results){
+
+	if (err){
+		console.log('err', err);
+	}
+
+	let lines = results.split('\n');
+	for(let i = 0; i < lines.length; i++){
+		let line = lines[i].trim();
+		if(line.length == 0 || line[0] === '#'){
+			continue;
+		}
+		line = line.split('\t');
+		let source = line[0].split(':');
+		let target_port = parseInt(line[1]);
+		let source_ip = source[0];
+		let source_port = parseInt(source[1]);
+
+		console.log(source_ip + ':' + source_port + ' -> 127.0.0.1:' + target_port);
+		net.createServer(CreateRequest(source_ip, source_port)).listen(target_port);
+	}
+})
  
-// iRO servers
-net.createServer(CreateRequest('128.241.92.99', 4501)).listen(4501);
-net.createServer(CreateRequest('128.241.92.99', 4502)).listen(4502);
-net.createServer(CreateRequest('128.241.92.99', 4503)).listen(4503);
-net.createServer(CreateRequest('128.241.92.99', 4504)).listen(4504);
-net.createServer(CreateRequest('128.241.92.99', 4505)).listen(4505);
-net.createServer(CreateRequest('128.241.92.99', 4506)).listen(4506);
-net.createServer(CreateRequest('128.241.92.99', 4507)).listen(4507);
-net.createServer(CreateRequest('128.241.92.99', 4508)).listen(4508);
-net.createServer(CreateRequest('128.241.92.99', 4509)).listen(4509);
-net.createServer(CreateRequest('128.241.92.99', 4510)).listen(4510);
-net.createServer(CreateRequest('128.241.92.122', 4501)).listen(4511);
-net.createServer(CreateRequest('128.241.92.122', 4502)).listen(4512);
-net.createServer(CreateRequest('128.241.92.122', 4503)).listen(4513);
-net.createServer(CreateRequest('128.241.92.122', 4504)).listen(4514);
-net.createServer(CreateRequest('128.241.92.122', 4505)).listen(4515);
-net.createServer(CreateRequest('128.241.92.122', 4506)).listen(4516);
-net.createServer(CreateRequest('128.241.92.122', 4507)).listen(4517);
-net.createServer(CreateRequest('128.241.92.122', 4508)).listen(4518);
-net.createServer(CreateRequest('128.241.92.122', 4509)).listen(4519);
-net.createServer(CreateRequest('128.241.92.122', 4510)).listen(4520);
-
-// NovaRO servers
-net.createServer(CreateRequest('158.69.123.38', 5175)).listen(4521);
-
-
 net.createServer(LogRequest()).listen(5555);
-
-console.log("TCP server accepting connection on port: 4501-4520");
-
