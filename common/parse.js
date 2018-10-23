@@ -542,6 +542,7 @@ define(function(require){
 		'PacketBuffer': PacketBuffer,
 		'AsciiToHex': AsciiToHex,
 		'HexStringToInt': HexStringToInt,
+		'IntToCoordBuffer': IntToCoordBuffer,
 		'GetTime': GetTime,
 		'ParsePackets': ParsePackets,
 	};

@@ -110,3 +110,8 @@ function CreateLogPacketBuffer(header, data, len){
 		return null;
 	}
 }
+
+module.exports = {
+	'LOGMESSAGE': LOGMESSAGE,
+	'CreateLogPacketBuffer': CreateLogPacketBuffer,
+}

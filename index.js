@@ -216,6 +216,8 @@ io.on('connection', function(socket){
 	});
 	
 	socket.on('SetWalkPlan', function(data){
+
+		return;
 		
 		var accountId = data.accountId;
 		var plan = data.plan;
@@ -270,7 +272,7 @@ io.on('connection', function(socket){
 			var coords = next.node;
 			var distance = next.distance;
 			//console.log('walking to', coords, distance, distance * this.walkspeed + 100);
-			var movePacket = send.CreateSendPacketBuffer(0x035f, {coords: IntToCoordBuffer(coords[0], coords[1])});
+			var movePacket = send.CreateSendPacketBuffer(0x035f, {coords: parse.IntToCoordBuffer(coords[0], coords[1])});
 			//console.log(bufutil.bufPrint(movePacket));
 			
 			if(connectionByAccount.hasOwnProperty(this.accountId)){
@@ -1793,18 +1795,24 @@ function CreateRequest(host, port)
 				var packetNum = 0;
 				while(packet !== null){
 					// Log the unmodified packet
-					if(bSendLoggingEnabled  && accountInfo.accountId == gAccountId) {
+					//if(bSendLoggingEnabled  && accountInfo.accountId == gAccountId) {
+					//	SendToWeb('log send', bufutil.bufToList(packet.bytes));
+					//}
+					if(bSendLoggingEnabled) {
 						SendToWeb('log send', bufutil.bufToList(packet.bytes));
 					}
 					
 					Log(2, accountInfo.accountId, packet.bytes);
 					
 					//console.log(packet.bytes);
-					if(HandleSend(packet, accountInfo, proxySocket, serviceSocket)){
-						// add to packet blob
-						//packetList.push(packet.bytes);
-						serviceSocket.write(packet.bytes);
-					}
+					//if(HandleSend(packet, accountInfo, proxySocket, serviceSocket)){
+					//	// add to packet blob
+					//	//packetList.push(packet.bytes);
+					//	serviceSocket.write(packet.bytes);
+					//}
+
+					// Write unmodified packet
+					serviceSocket.write(packet.bytes);
 					
 					// write the modified packet
 					packet = PACKET_SEND_BUFFER.GetNextPacket();
