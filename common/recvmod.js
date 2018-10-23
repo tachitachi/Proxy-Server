@@ -54,7 +54,11 @@ define(function(require){
 				filter: {identified: 0}, // Identify unidentified items that drop
 				useAccount: {field: null, useMine: false}, 
 				response: [
-					{cheat: true, type: RES_MODIFY, data: {identified: 1}},
+					{cheat: true, type: RES_MODIFY, data: {
+						identified: 1, 
+						//x: function(accountInfo){ return accountInfo.x; }, 
+						//y: function(accountInfo){ return accountInfo.y; }, 
+					}},
 				],
 			},
 		],

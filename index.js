@@ -1371,7 +1371,7 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 			var index = itemInfo[0].value;
 			var itemId = itemInfo[1].value;
 			var amount = itemInfo[3].value;
-			var itemName = DbTable_Items[itemId];
+			//var itemName = DbTable_Items[itemId];
 			//console.log(index, itemId, itemName, amount);
 			accountInfo.storage[itemId] = {index: index, amount: amount};
 			accountInfo.storageByIndex[index] = itemId;
@@ -1426,7 +1426,7 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 			var index = itemInfo[0].value;
 			var itemId = itemInfo[1].value;
 			var amount = itemInfo[3].value;
-			var itemName = DbTable_Items[itemId];
+			//var itemName = DbTable_Items[itemId];
 			//console.log(index, itemId, itemName, amount);
 			accountInfo.cart[itemId] = {index: index, amount: amount};
 			accountInfo.cartByIndex[index] = itemId;
@@ -1531,6 +1531,7 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 				}
 			}
 			
+			// Default to false if no filter
 			var noMatch = false;
 			
 			for(var key in modDefinition.filter){
@@ -1576,6 +1577,9 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 						var dataInfo = packetDefinition.datamap[key];
 						var length = dataInfo.end - dataInfo.start;
 						var value = response.data[key];
+						if(typeof(value) === 'function'){
+							value = value(accountInfo);
+						}
 						for(var i = 0; i < length; i++){
 							packet.bytes[dataInfo.start + i] = (value >> (i * 8)) & 0xff;
 						}
