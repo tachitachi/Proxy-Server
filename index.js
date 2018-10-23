@@ -1634,6 +1634,7 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 				case recvmod.RES_SERVER:
 					// write this to client after a given delay
 					//console.log('sending to server')
+					break; // disabled
 					
 					var delay = 0;
 					if(response.delay !== undefined){
