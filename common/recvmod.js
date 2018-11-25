@@ -96,9 +96,9 @@ define(function(require){
 			},
 			{
 				filter: {skillId: function(x){ 
-					var dropSkills = new Set([83, 85, 89]);
+					var dropSkills = new Set([83, 85, 89, 286]);
 					return dropSkills.has(x);
-				}}, // cast Meteor Storm, LoV, Storm Gust
+				}}, // cast Meteor Storm, LoV, Storm Gust, Deluge
 				useAccount: {field: null, useMine: true}, // make sure this field is my own account
 				response: [
 					{cheat: false, type: RES_DROP},
@@ -116,7 +116,7 @@ define(function(require){
 		0x011a: [
 			{
 				filter: {skillId: function(x){ 
-					var dropSkills = new Set([28, 51, 214, 1005, 2477]);
+					var dropSkills = new Set([28, 51, 214, 364, 1005, 2477]);
 					return dropSkills.has(x);
 				}}, // cast Guard
 				useAccount: {field: 'sourceId', useMine: true}, // make sure this field is my own account
@@ -229,6 +229,16 @@ define(function(require){
 				useAccount: {field: null, useMine: true}, // make sure this field is my own account
 				response: [
 					{cheat: true, type: RES_MODIFY, data: {skillId: 93, option: 0}}, // replace with Sense, and make it 1 hit
+					//{cheat: true, type: RES_SERVER, send: 0x0113, delay: 300, inField: 'targetId', myField:'targetId', useMine: false, data: {skillId: 2294, lv: 3}}, 
+					//{cheat: true, type: RES_SERVER, send: 0x0113, delay: 300, inField: 'targetId', myField:'targetId', useMine: false, data: {skillId: 2297, lv: 3}}, 
+				],
+			},
+			{
+				filter: {skillId: 86}, // cast waterball
+				useAccount: {field: null, useMine: false}, // make sure this field is my own account
+				response: [
+					{cheat: true, type: RES_MODIFY, data: {option: 0, type: 5, src_speed: 100}}, // replace with Sense, and make it 1 hit
+					//{cheat: false, type: RES_SPEECH, delay: 0, data: {msg: 'waterball'}},
 					//{cheat: true, type: RES_SERVER, send: 0x0113, delay: 300, inField: 'targetId', myField:'targetId', useMine: false, data: {skillId: 2294, lv: 3}}, 
 					//{cheat: true, type: RES_SERVER, send: 0x0113, delay: 300, inField: 'targetId', myField:'targetId', useMine: false, data: {skillId: 2297, lv: 3}}, 
 				],
@@ -621,10 +631,25 @@ define(function(require){
 	//			],
 	//		},
 			{
+				filter: {skillId: 2206}, // cast Recognize Spell
+				useAccount: {field: 'sourceId', useMine: true}, // make sure this field is my own account
+				response: [
+					//{cheat: true, type: RES_CLIENT, send: 0x01d0, delay: 0, inField: null, myField:'sourceId', useMine: true, data: {entity: 5}}, 
+					{cheat: true, type: RES_CLIENT, send: 0x043f, delay: 0, inField: null, myField:'ID', useMine: true, data: {type: 184, tick: 10000, flag: 1, unknown1: 1, unknown2: 0, unknown3: 0}}, // add maya purple
+				],
+			},
+			{
 				filter: {skillId: 2209}, // cast Stasis
 				useAccount: {field: 'sourceId', useMine: false}, // make sure this field is my own account
 				response: [
 					{cheat: false, type: RES_SPEECH, delay: 0, data: {msg: 'Stasis'}},
+				],
+			},
+			{
+				filter: {skillId: 8}, // cast Endure
+				useAccount: {field: 'sourceId', useMine: true}, // make sure this field is my own account
+				response: [
+					{cheat: false, type: RES_SPEECH, delay: 10000, data: {msg: 'Endure'}},
 				],
 			},
 			{
