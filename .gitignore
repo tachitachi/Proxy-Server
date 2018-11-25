@@ -4,6 +4,9 @@
 # Node modules
 node_modules
 
+# GRF files
+GRF
+
 # Windows image file caches
 Thumbs.db
 ehthumbs.db
