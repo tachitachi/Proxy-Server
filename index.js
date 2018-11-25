@@ -303,57 +303,57 @@ io.on('connection', function(socket){
 		recvmod.RECVMOD[data.header][data.pos].response[0].data[data.field] = data.value;
 	});
 	
-	socket.on('refill', function(data){
-		// data = {
-		//	accountId: ID,
-		// 	items: [
-		// 		{
-		// 			ID: X,
-		// 			amount: Y
-		// 		}
-		// 	]
-		// }
+	// socket.on('refill', function(data){
+	// 	// data = {
+	// 	//	accountId: ID,
+	// 	// 	items: [
+	// 	// 		{
+	// 	// 			ID: X,
+	// 	// 			amount: Y
+	// 	// 		}
+	// 	// 	]
+	// 	// }
 		
-		console.log(data);
+	// 	console.log(data);
 		
-		var accountId = data.accountId;
-		if(!connectedAccounts.hasOwnProperty(accountId)){
-			console.log('no connected account');
-			return;
-		}
-		if(!connectionByAccount.hasOwnProperty(accountId)){
-			console.log('no server connection');
-			return;
-		}
+	// 	var accountId = data.accountId;
+	// 	if(!connectedAccounts.hasOwnProperty(accountId)){
+	// 		console.log('no connected account');
+	// 		return;
+	// 	}
+	// 	if(!connectionByAccount.hasOwnProperty(accountId)){
+	// 		console.log('no server connection');
+	// 		return;
+	// 	}
 		
-		var accountInfo = connectedAccounts[accountId];
-		var serviceSocket = connectionByAccount[accountId].server;
-		
-		
-		
-		var refillData = data.items;
-		
-		var storagePackets = itemutil.storageRefill(refillData, accountInfo);
-		console.log(storagePackets);
-		
-		if(storagePackets.length > 0){
-			var SendPackets = function(arr, accountInfo, serviceSocket){
-				if (!accountInfo.isStorageOpen){
-					return;
-				}
-				if(arr.length > 0){
-					var packet = arr.pop();
-					serviceSocket.write(packet);
-					//console.log(bufutil.bufPrint(packet));
-					setTimeout(SendPackets, 500, arr, accountInfo, serviceSocket);
-				}
-			}
-			setTimeout(SendPackets, 500, storagePackets, accountInfo, serviceSocket);
-		}
+	// 	var accountInfo = connectedAccounts[accountId];
+	// 	var serviceSocket = connectionByAccount[accountId].server;
 		
 		
 		
-	});
+	// 	var refillData = data.items;
+		
+	// 	var storagePackets = itemutil.storageRefill(refillData, accountInfo);
+	// 	console.log(storagePackets);
+		
+	// 	if(storagePackets.length > 0){
+	// 		var SendPackets = function(arr, accountInfo, serviceSocket){
+	// 			if (!accountInfo.isStorageOpen){
+	// 				return;
+	// 			}
+	// 			if(arr.length > 0){
+	// 				var packet = arr.pop();
+	// 				serviceSocket.write(packet);
+	// 				//console.log(bufutil.bufPrint(packet));
+	// 				setTimeout(SendPackets, 500, arr, accountInfo, serviceSocket);
+	// 			}
+	// 		}
+	// 		setTimeout(SendPackets, 500, storagePackets, accountInfo, serviceSocket);
+	// 	}
+		
+		
+		
+	// });
 	
   
 });
@@ -1381,25 +1381,25 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 		
 		// loop over every item in refill, and see what needs to happen
 		//console.log(accountInfo.name);
-		if(accountInfo.name !== null && refill.hasOwnProperty(accountInfo.name)){
-			var refillData = refill[accountInfo.name];
-			var storagePackets = itemutil.storageRefill(refillData, accountInfo);
-			
-			if(storagePackets.length > 0){
-				var SendPackets = function(arr, accountInfo){
-					if (!accountInfo.isStorageOpen){
-						return;
-					}
-					if(arr.length > 0){
-						var packet = arr.pop();
-						serviceSocket.write(packet);
-						//console.log(bufutil.bufPrint(packet));
-						setTimeout(SendPackets, 500, arr, accountInfo);
-					}
-				}
-				setTimeout(SendPackets, 500, storagePackets, accountInfo);
-			}
-		}
+		//if(accountInfo.name !== null && refill.hasOwnProperty(accountInfo.name)){
+		//	var refillData = refill[accountInfo.name];
+		//	var storagePackets = itemutil.storageRefill(refillData, accountInfo);
+		//	
+		//	if(storagePackets.length > 0){
+		//		var SendPackets = function(arr, accountInfo){
+		//			if (!accountInfo.isStorageOpen){
+		//				return;
+		//			}
+		//			if(arr.length > 0){
+		//				var packet = arr.pop();
+		//				serviceSocket.write(packet);
+		//				//console.log(bufutil.bufPrint(packet));
+		//				setTimeout(SendPackets, 500, arr, accountInfo);
+		//			}
+		//		}
+		//		setTimeout(SendPackets, 500, storagePackets, accountInfo);
+		//	}
+		//}
 		
 		
 		/*
