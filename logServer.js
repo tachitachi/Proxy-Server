@@ -11,26 +11,21 @@ var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 
+
+require("amd-loader");
 var recv = require('./common/recv');
 var send = require('./common/send');
 var bufutil = require('./bufutil');
-
-eval(fs.readFileSync('public/parse.js').toString());
-//eval(fs.readFileSync('public/recv.js').toString());
-//eval(fs.readFileSync('public/send.js').toString());
-eval(fs.readFileSync('public/skills.js').toString());
-eval(fs.readFileSync('public/items.js').toString());
-
-eval(fs.readFileSync('public/recvmod.js').toString());
-eval(fs.readFileSync('public/refill.js').toString());
-eval(fs.readFileSync('public/monstermod.js').toString());
-eval(fs.readFileSync('public/rareitem.js').toString());
-
-eval(fs.readFileSync('player.js').toString());
-//eval(fs.readFileSync('bufutil.js').toString());
-eval(fs.readFileSync('constants.js').toString());
-
-eval(fs.readFileSync('LogMessage.js').toString());
+var parse = require('./common/parse');
+var recvmod = require('./common/recvmod');
+var sendmod = require('./common/sendmod');
+var refill = require('./common/refill');
+var monstermod = require('./common/monstermod');
+var rareitem = require('./common/rareitem');
+var config = require('./config');
+var itemutil = require('./itemutil');
+var constants = require('./constants');
+var logmessage = require('./LogMessage');
 
 process.on("uncaughtException", function(e) {
     console.log(e.stack);
@@ -48,11 +43,11 @@ function SendToWeb(name, msg){
 }
 
 http.listen(3001, function(){
-  console.log('listening on *:3000');
+  console.log('listening on *:3001');
 });
 
 var kMaxNumPackets = 1000;
-var PACKET_LOG_BUFFER = new PacketBuffer(LOGMESSAGE, 1);
+var PACKET_LOG_BUFFER = new parse.PacketBuffer(logmessage.LOGMESSAGE, 1);
 
 var RECV_BUFFER = {};
 var SEND_BUFFER = {};
@@ -60,7 +55,7 @@ var LOG_BUFFER = {};
 
 
 // TODO: Move some of these to constants?
-var sessionTime = GetTime().timestamp;
+var sessionTime = parse.GetTime().timestamp;
 var recvLogPath = path.join('logs', 'recv');
 var sendLogPath = path.join('logs', 'send');
 
@@ -83,24 +78,24 @@ function HandleLog(packet){
 	var logHeader = null;
 	
 	// Get recv/send, and ID
-	var ID = packet.data[LOGMESSAGE[packet.header].datamap.ID.index].value;
+	var ID = packet.data[logmessage.LOGMESSAGE[packet.header].datamap.ID.index].value;
 	
 	switch(packet.header){
 	case 0x0001:
 		packetBuffer = RECV_BUFFER;
-		packetDef = RECV;
+		packetDef = recv.RECV;
 		webMessage = 'log recv';
 		logHeader = 0x0003;
 		break;
 	case 0x0002:
 		packetBuffer = SEND_BUFFER;
-		packetDef = SEND;
+		packetDef = send.SEND;
 		webMessage = 'log send';
 		logHeader = 0x0004;
 		break;
 	case 0x0005:
 		packetBuffer = LOG_BUFFER;
-		packetDef = LOGMESSAGE;
+		packetDef = logmessage.LOGMESSAGE;
 		webMessage = 'log debug';
 		logHeader = 0x0006;
 		break;
@@ -116,13 +111,13 @@ function HandleLog(packet){
 	}
 	
 	if(!packetBuffer.hasOwnProperty(ID)){
-		packetBuffer[ID] = new PacketBuffer(packetDef, 1);
+		packetBuffer[ID] = new parse.PacketBuffer(packetDef, 1);
 	}
 	//console.log(packet.toString());
-	var packetData = packet.data[LOGMESSAGE[packet.header].datamap.data.index].value;
+	var packetData = packet.data[logmessage.LOGMESSAGE[packet.header].datamap.data.index].value;
     //console.log(packet.toString());
 	
-	var parsedPackets = ParsePackets(packetBuffer[ID], packetData);
+	var parsedPackets = parse.ParsePackets(packetBuffer[ID], packetData);
 	//console.log(parsedPackets);
 	for (p in parsedPackets){
 		
@@ -134,7 +129,7 @@ function HandleLog(packet){
 		var fracTime = curTime % 1000;
 		
 		var loggedPacketLength = parsedPackets[p].length + 10;
-		var logPacket = CreateLogPacketBuffer(logHeader, {len: loggedPacketLength, time: timestamp, frac: fracTime, data: parsedPackets[p].bytes}, loggedPacketLength);
+		var logPacket = logmessage.CreateLogPacketBuffer(logHeader, {len: loggedPacketLength, time: timestamp, frac: fracTime, data: parsedPackets[p].bytes}, loggedPacketLength);
 		
 		// Write log to disk
 		fs.appendFile(path.join('logs', ID + '_' + sessionTime + '.log'), logPacket, 'binary', function(err) {
@@ -153,7 +148,7 @@ function HandleLog(packet){
 var client = new net.Socket();
 client.connect(5555, '127.0.0.1', function() {
 	console.log('Connected');
-	client.write(LOG_CONNECTION_PASSWORD);
+	client.write(constants.LOG_CONNECTION_PASSWORD);
 });
 
 client.on('data', function(data) {
