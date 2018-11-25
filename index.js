@@ -827,7 +827,56 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 			dropPacket = true;
 		}
 		break;
-	
+	case 0x008d:
+		//public_chat
+
+		if(accountInfo.isInChatroom){
+			// email notifiication
+
+			var message = packet.data[recv.RECV[packet.header].datamap.message.index].value;
+
+			console.log('should notify [chatroom]', message);
+		}
+
+		break;
+	case 0x00d6:
+		//chat_created
+
+		// Must be in a party to activate afk-notification mode
+		if(accountInfo.name !== null){
+			accountInfo.isInChatroom = true;
+		}
+
+		break;
+	case 0x00dc:
+		//chat_user_join
+
+		break;
+	case 0x00dd:
+		//chat_user_leave
+
+		var name = packet.data[recv.RECV[packet.header].datamap.name.index].value;
+
+		// Disable afk-notification after leaving chatroom
+		if(name === accountInfo.name){
+			accountInfo.isInChatroom = false;
+		}
+
+		break;
+	case 0x09de:
+		//private_message
+
+		if(accountInfo.isInChatroom){
+			// email notifiication
+
+			var ID = packet.data[recv.RECV[packet.header].datamap.ID.index].value;
+			var name = packet.data[recv.RECV[packet.header].datamap.name.index].value;
+			var msg = packet.data[recv.RECV[packet.header].datamap.msg.index].value;
+
+			console.log('should notify [private]', ID, name, msg);
+		}
+
+		break;
 	case 0x00f8:
 		accountInfo.isStorageOpen = false;
 		break;
@@ -1745,6 +1794,8 @@ function AccountInfo(){
 	this.y = 0;
 	this.readyToNav = false;
 	this.navInterrupted = true;
+	this.isInChatroom = false;
+	this.isVending = false;
 }
 
 

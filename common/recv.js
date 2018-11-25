@@ -996,7 +996,7 @@ define(function(require){
 			],
 		},
 		0x00d6: {
-			name: 'unknown_packet_00d6', 
+			name: 'chat_created', 
 			length: 3, 
 			log: 2,
 			data: [
@@ -1051,19 +1051,22 @@ define(function(require){
 			],
 		},
 		0x00dc: {
-			name: 'unknown_packet_00dc', 
+			name: 'chat_user_join', 
 			length: 28, 
 			log: 2,
 			data: [
-				{name: 'data', size: 26, type: 'byte', log: 1},
+				{name: 'num_users', size: 2, type: 'int', log: 1},
+				{name: 'name', size: 24, type: 'string', log: 1},
 			],
 		},
 		0x00dd: {
-			name: 'unknown_packet_00dd', 
+			name: 'chat_user_leave', 
 			length: 29, 
 			log: 2,
 			data: [
-				{name: 'data', size: 27, type: 'byte', log: 1},
+				{name: 'num_users', size: 2, type: 'int', log: 1},
+				{name: 'name', size: 24, type: 'string', log: 1},
+				{name: 'flag', size: 1, type: 'int', log: 1},
 			],
 		},
 		0x00de: {
@@ -1093,11 +1096,13 @@ define(function(require){
 			],
 		},
 		0x00e1: {
-			name: 'unknown_packet_00e1', 
+			name: 'chat_newowner', 
 			length: 30, 
 			log: 2,
 			data: [
-				{name: 'data', size: 28, type: 'byte', log: 1},
+				{name: 'type', size: 1, type: 'byte', log: 1},
+				{name: 'unknown', size: 3, type: 'byte', log: 1},
+				{name: 'name', size: 24, type: 'string', log: 1},
 			],
 		},
 		0x00e2: {
