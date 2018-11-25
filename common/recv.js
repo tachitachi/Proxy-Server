@@ -9510,7 +9510,18 @@ define(function(require){
 			],
 		},
 		0x09de: {
-			name: 'unknown_packet_09de', 
+			name: 'private_message', 
+			length: -1, 
+			log: 2,
+			data: [
+				{name: 'len', size: 2, type: 'int', log: 2},
+				{name: 'ID', size: 4, type: 'int', log: 2},
+				{name: 'name', size: 25, type: 'string', log: 2},
+				{name: 'msg', size: -1, type: 'string', log: 1},
+			],
+		},
+		0x09f8: {
+			name: 'unknown_packet_09f8', 
 			length: -1, 
 			log: 2,
 			data: [
