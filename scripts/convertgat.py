@@ -12,7 +12,7 @@ import os
 
 import numpy as np
 import scipy.misc as smp
-import Queue as Q
+import queue as Q
 
 # TODO:
 #   1. Priority Queue
@@ -122,7 +122,7 @@ def FindPath(mapname, start, end):
         closedSet.add(current)
         
         if current == end:
-            print 'reached the goal', len(closedSet)
+            print('reached the goal', len(closedSet))
             break
         
         # check adjacent squares
@@ -143,7 +143,7 @@ def FindPath(mapname, start, end):
                 openSet.put((gScore[neighbor] + pathScore(neighbor, end), neighbor))
         i += 1
         if i > 500000:
-            print 'too many iterations'
+            print('too many iterations')
             return cameFrom
                 
     #print 'cameFrom: {}'.format(cameFrom)
@@ -227,7 +227,7 @@ def convertGat(filepath):
     width = struct.unpack('<I', data[6:10])[0]
     height = struct.unpack('<I', data[10:14])[0]
     
-    print magic, width,  height
+    print(magic, width,  height)
     
     GATBlocks = [] # = data[14:] # Everything else
     row = []
@@ -273,18 +273,7 @@ def convertGat(filepath):
 def convertAll():
     if not os.path.isdir('public\\mapdata'):
         os.makedirs('public\\mapdata')
-        
-    '''with open('public\\mapdata\\data.js', 'w') as out:
-        #out.write('var mapdata = {\n')
-        for root, dirs, files in os.walk('C:\Users\Kiba1\Documents\proxyserver\GRF\files'):
-            for f in files:
-                if f.endswith('.gat'):
-                    filepath = os.path.join(root, f)
-                    data = convertGat(filepath)
-                    #out.write('\t\'{}\': {}'.format(data['name'], data['data']))
-                    
-        #out.write('};')'''
-        
+    
     for root, dirs, files in os.walk('GRF\\files'):
         for f in files:
             if f.endswith('.gat'):

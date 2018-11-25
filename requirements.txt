@@ -1,1 +1,4 @@
 lxml
+numpy
+scipy
+Pillow
