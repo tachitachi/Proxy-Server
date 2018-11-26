@@ -141,7 +141,7 @@ function HandleLog(packet){
 		
 		
 		// make log human readable
-		SendToWeb(webMessage, {message: parsedPackets[p].toHTML()});
+		SendToWeb(webMessage, {message: parsedPackets[p].toHTML(), raw: parsedPackets[p]});
 	}
 }
 

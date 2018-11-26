@@ -24,6 +24,7 @@ var config = require('./config');
 var itemutil = require('./itemutil');
 var constants = require('./constants');
 var logmessage = require('./LogMessage');
+var DbTable_Items = require('./common/items')
 
 app.use(express.static(__dirname + '/public'));
 
@@ -818,6 +819,20 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 		}
 		
 		break;
+	case 0x00b1:
+		//stat_info2
+		var type = packet.data[recv.RECV[packet.header].datamap.type.index].value;
+		var val = packet.data[recv.RECV[packet.header].datamap.val.index].value;
+
+		switch(type){
+		case 20:
+			accountInfo.zeny = val;
+			break;
+		default:
+			break;
+		}
+
+		break
 	case 0x07fb:
 		// skill cast
 		
@@ -937,9 +952,8 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 		break;
 	case 0x09de:
 		//private_message
-
-		if(accountInfo.isInChatroom){
-			// email notifiication
+		if(accountInfo.isInChatroom || accountInfo.isVending){
+			// email notification
 
 			var ID = packet.data[recv.RECV[packet.header].datamap.ID.index].value;
 			var name = packet.data[recv.RECV[packet.header].datamap.name.index].value;
@@ -950,6 +964,54 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 			var body = '[{0}] [private] {1} [{2}] : {3}'.format(parse.GetTime().string, name, ID, msg);
 			pushEmailNotification(accountInfo.name, body);
 		}
+
+		break;
+	case 0x0136:
+		//vending_start
+		if(accountInfo.name !== null){
+			var itemInfoList = packet.data[recv.RECV[packet.header].datamap.itemInfo.index].value;
+
+			accountInfo.isVending = true;
+			accountInfo.vendData = {};
+
+			for(var i = 0; i < itemInfoList.length; i++){
+				var itemInfo = itemInfoList[i];
+				// TODO: need recursive definition of arrays
+				var price = itemInfo[0].value;
+				var index = itemInfo[1].value;
+				var quantity = itemInfo[2].value;
+				var itemId = itemInfo[4].value;
+				accountInfo.vendData[index] = {
+					'itemId': itemId,
+					'price': price,
+					'quantity': quantity,
+				}
+			}
+		}
+
+		break;
+	case 0x0137:
+		//shop_sold
+
+		if(accountInfo.isVending){
+
+			var index = packet.data[recv.RECV[packet.header].datamap.index.index].value;
+			var quantity = packet.data[recv.RECV[packet.header].datamap.quantity.index].value;
+
+			var itemData = accountInfo.vendData[index];
+
+			var totalSale = itemData.price * quantity;
+			itemData.quantity -= quantity;
+			var remaining = itemData.quantity;
+			var itemId = itemData.itemId;
+			var itemName = DbTable_Items.hasOwnProperty(itemId) ? DbTable_Items[itemId] : 'Unknown Item {0}'.format(itemId);
+
+			var msg = '[{0}] Sold [{1}] [{2}] for [{3}] zeny. [{4}] remaining. Current zeny: [{5}]'.format(parse.GetTime().string, quantity, itemName, totalSale, remaining, accountInfo.zeny);
+			console.log(msg);
+			pushEmailNotification(accountInfo.name, msg);
+
+	}
+
 
 		break;
 	case 0x00f8:
@@ -1037,6 +1099,7 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 		break;
 	case 0x0196: // this only has 3 fields
 	case 0x043f: // this has more than 3 fields, but we only need to use 3 for now
+	case 0x0983: // also has more than 3 fields
 		// actor status active
 	
 		var accountId = packet.data[recv.RECV[packet.header].datamap.ID.index].value;
@@ -1075,6 +1138,14 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 						proxySocket.write(endInspirationEffect);
 					}
 				}
+			}
+		}
+		else{
+			// do stuff for myself
+
+			// disable afk-notifications if shop closes
+			if(type === 95 && flag === 0 && accountInfo.isVending){
+				accountInfo.isVending = false;
 			}
 		}
 		
@@ -1871,6 +1942,8 @@ function AccountInfo(){
 	this.navInterrupted = true;
 	this.isInChatroom = false;
 	this.isVending = false;
+	this.vendData = {};
+	this.zeny = 0;
 }
 
 

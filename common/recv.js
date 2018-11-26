@@ -1738,11 +1738,11 @@ define(function(require){
 			],
 		},
 		0x012d: {
-			name: 'unknown_packet_012d', 
+			name: 'shop_skill', 
 			length: 4, 
 			log: 2,
 			data: [
-				{name: 'data', size: 2, type: 'byte', log: 1},
+				{name: 'number', size: 2, type: 'int', log: 1},
 			],
 		},
 		0x012e: {
@@ -1814,20 +1814,40 @@ define(function(require){
 			],
 		},
 		0x0136: {
-			name: 'unknown_packet_0136', 
+			name: 'vending_start', 
 			length: -1, 
 			log: 2,
 			data: [
 				{name: 'len', size: 2, type: 'int', log: 2},
-				{name: 'data', size: -1, type: 'byte', log: 1},
+				{name: 'unknown', size: 4, type: 'bytes', log: 2},
+				{name: 'itemInfo', size: -1, type: 'array', log: 2, struct: {
+						size: 47,
+						data: [
+							{name: 'price', size: 4, type: 'int', log: 1},
+							{name: 'index', size: 2, type: 'int', log: 1},
+							{name: 'quantity', size: 2, type: 'int', log: 1},
+							{name: 'type', size: 1, type: 'int', log: 1},
+							{name: 'itemId', size: 2, type: 'int', log: 2},
+							{name: 'identified', size: 1, type: 'int', log: 0},
+							{name: 'broken', size: 1, type: 'int', log: 0},
+							{name: 'upgrade', size: 1, type: 'int', log: 0},
+							{name: 'card1', size: 2, type: 'int', log: 0},
+							{name: 'card2', size: 2, type: 'int', log: 0},
+							{name: 'card3', size: 2, type: 'int', log: 0},
+							{name: 'card4', size: 2, type: 'int', log: 0},
+							{name: 'options', size: 25, type: 'byte', log: 0},
+						]
+					}
+				}, //(price index quantity type itemId identified broken upgrade card1 card2 card3 card4 options)
 			],
 		},
 		0x0137: {
-			name: 'unknown_packet_0137', 
+			name: 'shop_sold', 
 			length: 6, 
 			log: 2,
 			data: [
-				{name: 'data', size: 4, type: 'byte', log: 1},
+				{name: 'index', size: 2, type: 'int', log: 1},
+				{name: 'quantity', size: 2, type: 'int', log: 1},
 			],
 		},
 		0x0138: {
@@ -9681,6 +9701,19 @@ define(function(require){
 						]
 					}
 				}, //(index itemId type amount wear_state card1 card2 card3 card4 expiration flags)(v v C v a4 v4 V C)
+			],
+		},
+		0x0a30: {
+			name: 'actor_info3', 
+			length: 106, 
+			log: 2,
+			data: [
+				{name: 'ID', size: 4, type: 'int', log: 2},
+				{name: 'name', size: 24, type: 'string', log: 2},
+				{name: 'partyName', size: 24, type: 'string', log: 2},
+				{name: 'guildName', size: 24, type: 'string', log: 2},
+				{name: 'guildTitle', size: 24, type: 'string', log: 2},
+				{name: 'titleId', size: 4, type: 'string', log: 2},
 			],
 		},
 		0x0a3b: {
