@@ -8,6 +8,7 @@ var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var path = require('path');
+var nodemailer = require('nodemailer');
 
 require("amd-loader");
 var recv = require('./common/recv');
@@ -114,6 +115,74 @@ function copyEmblemAlliance(myId, theirId){
     });
     
 }
+
+var email_buffer = {};
+
+function emailNotification(subject, message){
+	var transporter = nodemailer.createTransport({
+		'service': config.email.service,
+		'auth': {
+			'user': config.email.user,
+			'pass': config.email.pass
+		}
+	});
+
+	var mailOptions = {
+		'from': config.email.user,
+		'to': config.email.sendTo,
+		'subject': subject,
+		'text': message,
+	};
+
+	transporter.sendMail(mailOptions, function(error, info){
+		if(error){
+			console.log(error);
+		}
+		else{
+			console.log('email sent');
+		}
+	});
+}
+
+function pushEmailNotification(name, message){
+	if(!config.email.enabled){
+		return;
+	}
+
+	if(!email_buffer.hasOwnProperty(name)){
+		email_buffer[name] = [];
+	}
+
+	email_buffer[name].push(message);
+}
+
+if(config.email.enabled){
+	setInterval(function(){
+
+		if(Object.keys(email_buffer).length == 0){
+			return;
+		}
+
+		let body = '';
+
+		for(let name in email_buffer){
+			body += '{0}:\n\n'.format(name);
+			let messages = email_buffer[name];
+			for(let i = 0; i < messages.length; i++){
+				body += '{0}\n'.format(messages[i]);
+			}
+			body += '\n\n\n'
+			delete email_buffer[name]
+		}
+
+		emailNotification('RO Notifications', body);
+
+	}, config.email.delay);
+}
+
+
+
+
 
 io.on('connection', function(socket){
 
@@ -786,35 +855,35 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 	case 0x00b3:
 		// switch character, reset stats
 			
-		accountInfo.name = null;
-        accountInfo.guildId = 0;
-        accountInfo.allies = {};
-		accountInfo.currentHp = 0;
-		accountInfo.currentSp = 0;
-		accountInfo.maxHp = 0;
-		accountInfo.maxSp = 0;
-        accountInfo.aspd = 0;
-		accountInfo.currentSp = 0;
-		accountInfo.items = {};
-		accountInfo.nodelay = false;
-		accountInfo.autopot = false;
-		accountInfo.inventory = {};
-		accountInfo.inventoryByIndex = {};
-		accountInfo.inventoryEquipment = {};
-		accountInfo.inventoryEquipmentByIndex = {};
-		accountInfo.cart = {};
-		accountInfo.cartByIndex = {};
-		accountInfo.cartEquipment = {};
-		accountInfo.cartEquipmentByIndex = {};
-		accountInfo.storageEquipment = {};
-		accountInfo.storageEquipmentByIndex = {};
-		accountInfo.storage = {};
-		accountInfo.storageByIndex = {};
-		accountInfo.walkspeed = 150;
-		accountInfo.x = 0;
-		accountInfo.y = 0;
-		accountInfo.readyToNav = false;
-		accountInfo.navInterrupted = true;
+		//accountInfo.name = null;
+        //accountInfo.guildId = 0;
+        //accountInfo.allies = {};
+		//accountInfo.currentHp = 0;
+		//accountInfo.currentSp = 0;
+		//accountInfo.maxHp = 0;
+		//accountInfo.maxSp = 0;
+        //accountInfo.aspd = 0;
+		//accountInfo.currentSp = 0;
+		//accountInfo.items = {};
+		//accountInfo.nodelay = false;
+		//accountInfo.autopot = false;
+		//accountInfo.inventory = {};
+		//accountInfo.inventoryByIndex = {};
+		//accountInfo.inventoryEquipment = {};
+		//accountInfo.inventoryEquipmentByIndex = {};
+		//accountInfo.cart = {};
+		//accountInfo.cartByIndex = {};
+		//accountInfo.cartEquipment = {};
+		//accountInfo.cartEquipmentByIndex = {};
+		//accountInfo.storageEquipment = {};
+		//accountInfo.storageEquipmentByIndex = {};
+		//accountInfo.storage = {};
+		//accountInfo.storageByIndex = {};
+		//accountInfo.walkspeed = 150;
+		//accountInfo.x = 0;
+		//accountInfo.y = 0;
+		//accountInfo.readyToNav = false;
+		//accountInfo.navInterrupted = true;
 		
 		break;
 	case 0x0088:
@@ -835,7 +904,10 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 
 			var message = packet.data[recv.RECV[packet.header].datamap.message.index].value;
 
-			console.log('should notify [chatroom]', message);
+			console.log('Email notification [chatroom]', message);
+
+			var body = '[{0}] [chatroom] {1}'.format(parse.GetTime().string, message);
+			pushEmailNotification(accountInfo.name, body);
 		}
 
 		break;
@@ -873,7 +945,10 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 			var name = packet.data[recv.RECV[packet.header].datamap.name.index].value;
 			var msg = packet.data[recv.RECV[packet.header].datamap.msg.index].value;
 
-			console.log('should notify [private]', ID, name, msg);
+			console.log('Email notification [private]', ID, name, msg);
+
+			var body = '[{0}] [private] {1} [{2}] : {3}'.format(parse.GetTime().string, name, ID, msg);
+			pushEmailNotification(accountInfo.name, body);
 		}
 
 		break;
@@ -1940,6 +2015,12 @@ function CreateRequest(host, port)
 		});
 		proxySocket.on("close", function(had_error) {
 			console.log('proxy close', had_error);
+
+			if(accountInfo.isVending || accountInfo.isInChatroom){
+				let msg = '[{0}] Disconnected'.format(parse.GetTime().string);
+				pushEmailNotification(accountInfo.name, msg);
+			}
+
 			serviceSocket.end();
 			delete clientConnections[myConnectionId];
 			delete serverConnections[myConnectionId];
