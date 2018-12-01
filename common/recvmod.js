@@ -397,6 +397,13 @@ define(function(require){
 				],
 			},
 			{
+				filter: {skillId: 2211}, // Crimson Rock
+				useAccount: {field: null, useMine: false}, 
+				response: [
+					{cheat: false, type: RES_SPEECH, delay: 5000, data: {msg: 'Crimson'}}, 
+				],
+			},
+			{
 				filter: {skillId: 5036}, // Lunatic Carrot Beat
 				useAccount: {field: null, useMine: false}, 
 				response: [
