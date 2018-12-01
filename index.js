@@ -437,7 +437,7 @@ var proxyPort = 4500;
 var serviceHost = '128.241.92.114';
 var servicePort = 4500;
 
-var tcpConnectionStart = new Buffer([0x04, 0x01, 0x11, 0x94, 0x80, 0xf1, 0x5c, 0x72, 0x00]);
+//var tcpConnectionStart = new Buffer([0x04, 0x01, 0x11, 0x94, 0x80, 0xf1, 0x5c, 0x72, 0x00]);
 
 //								   [header    ][ accountId           ][type][jobId                 ]  
 //var jobChangePacket = new Buffer([0xd7, 0x01, 0xf4, 0x3f, 0x1c, 0x00, 0x00, 0xef, 0x0f, 0x00, 0x00]);
@@ -1963,11 +1963,8 @@ function CreateRequest(host, port)
 		serviceSocket.connect(parseInt(port), host, function() {
 			connected = true;
 			console.log('  ** connect **', host, port);
-			proxySocket.write(new Buffer([0x00, 0x5a, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]));
 			if (buffers.length > 0) {
 				for (i = 0; i < buffers.length; i++) {
-					if(bufutil.bufCompare(tcpConnectionStart, buffers[i]))
-						continue;
 					serviceSocket.write(buffers[i]);
 				}
 			}
@@ -1977,7 +1974,7 @@ function CreateRequest(host, port)
 		});
 		proxySocket.on("error", function (e) {
 			console.log('proxy error', e);
-			serviceSocket.end();
+			//serviceSocket.end();
 		});
 		serviceSocket.on("error", function (e) {
 			console.log('service error', e);
@@ -1986,9 +1983,6 @@ function CreateRequest(host, port)
 			proxySocket.end();
 		});
 		proxySocket.on("data", function (data) {
-			if(bufutil.bufCompare(tcpConnectionStart, data))
-				return;
-
 			if (connected) {
 			
 				
