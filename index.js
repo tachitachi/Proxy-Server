@@ -1966,7 +1966,6 @@ function CreateRequest(host, port)
 			proxySocket.write(new Buffer([0x00, 0x5a, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]));
 			if (buffers.length > 0) {
 				for (i = 0; i < buffers.length; i++) {
-					//console.log(buffers[i]);
 					if(bufutil.bufCompare(tcpConnectionStart, buffers[i]))
 						continue;
 					serviceSocket.write(buffers[i]);
@@ -2029,22 +2028,11 @@ function CreateRequest(host, port)
 					}
 				}
 			
-			
-			
-			
-				//if(bSendLoggingEnabled && accountInfo.accountId == gAccountId) {
-				//	SendToWeb('log send', bufutil.bufToList(data));
-				//}
-				//serviceSocket.write(data);
 			} else {
-				//buffers[buffers.length] = new Buffer([0x72, 0x00, 0x89, 0xC8, 0x48, 0x00, 0x59, 0xB6, 0x2F, 0x02, 0xAD, 0x2E, 0xE6, 0x67, 0xE7, 0x0A, 0x2A, 0x0D, 0x01]);
-				//console.log(buffers, buffers.length);
-				// TODO: Fix login packet on start
-				buffers[buffers.lengnth] = data;
-				//console.log(buffers);
+				buffers[buffers.length] = data;
 			}
 		});
-		serviceSocket.on("data", function(data) {		
+		serviceSocket.on("data", function(data) {
 		
 			if(!bPneumaGridEnabled){
 				proxySocket.write(data);
