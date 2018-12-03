@@ -246,13 +246,15 @@ define(function(require){
 			{
 				filter: {
 					skillId: function(x){ 
-						var dropSkills = new Set([2477]);
+						// make skills a single hit
+						// crimson rock
+						var dropSkills = new Set([2211]);
 						return dropSkills.has(x);
 					},
 				},				// drop cart cannon
 				useAccount: {field: null, useMine: true}, // make sure this field is my own account
 				response: [
-					{cheat: true, type: RES_MODIFY, data: {skillId: 93, option: 0}}, // replace with Sense, and make it 1 hit
+					{cheat: true, type: RES_MODIFY, data: {option: 0}}, // make it 1 hit
 				],
 			},
 	//		{
