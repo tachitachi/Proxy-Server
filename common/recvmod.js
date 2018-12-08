@@ -624,14 +624,20 @@ define(function(require){
 	//				{cheat: true, type: RES_MODIFY, data: {skillId: 216}}, // replace with Divest Shield
 	//			],
 	//		},
-	//		{
-	//			filter: {skillId: 51}, // cast Hide
-	//			useAccount: {field: 'sourceId', useMine: true}, // make sure this field is my own account
-	//			response: [
-	//				//{cheat: true, type: RES_CLIENT, send: 0x01d0, delay: 0, inField: null, myField:'sourceId', useMine: true, data: {entity: 5}}, 
-	//				{cheat: true, type: RES_CLIENT, send: 0x043f, delay: 0, inField: null, myField:'ID', useMine: true, data: {type: 184, tick: 10000, flag: 1, unknown1: 1, unknown2: 0, unknown3: 0}}, // add maya purple
-	//			],
-	//		},
+			{
+				filter: {skillId: 51}, // cast Hide
+				useAccount: {field: 'sourceId', useMine: true}, // make sure this field is my own account
+				response: [
+					{cheat: true, type: RES_CLIENT, send: 0x043f, delay: 0, inField: null, myField:'ID', useMine: true, data: {type: 184, tick: 10000, flag: 1, unknown1: 1, unknown2: 0, unknown3: 0}}, // add maya purple
+				],
+			},
+			{
+				filter: {skillId: 475}, // cast Preserve
+				useAccount: {field: 'sourceId', useMine: true}, // make sure this field is my own account
+				response: [
+					{cheat: true, type: RES_CLIENT, send: 0x0983, delay: 0, inField: null, myField:'ID', useMine: true, data: {type: 207,  flag: 1}}, // add mirror image effect
+				],
+			},
 	//		{
 	//			filter: {skillId: 150}, // cast Backslide
 	//			useAccount: {field: 'sourceId', useMine: true}, // make sure this field is my own account
