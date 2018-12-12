@@ -101,7 +101,7 @@ define(function(require){
 				}}, // cast Meteor Storm, LoV, Storm Gust, Deluge
 				useAccount: {field: null, useMine: true}, // make sure this field is my own account
 				response: [
-					{cheat: false, type: RES_DROP},
+					{cheat: true, type: RES_DROP},
 				],
 			},
 	//		{
@@ -131,7 +131,7 @@ define(function(require){
 				}}, // cast Guard
 				useAccount: {field: 'sourceId', useMine: true}, // make sure this field is my own account
 				response: [
-					{cheat: false, type: RES_DROP},
+					{cheat: true, type: RES_DROP},
 				],
 			},
 			{
@@ -139,7 +139,7 @@ define(function(require){
 				useAccount: {field: 'sourceId', useMine: true}, // make sure this field is my own account
 				response: [
 					//{cheat: false, type: RES_DROP},
-					{cheat: false, type: RES_CLIENT, send: 0x01de, delay: 0, inField: 'targetId', outField: 'targetId', myField:'sourceId', useMine: true, data: {skillId: 5029, src_speed: 100, dst_speed: 1, damage: -100, level: 1, option: 0, type: 8}},
+					{cheat: true, type: RES_CLIENT, send: 0x01de, delay: 0, inField: 'targetId', outField: 'targetId', myField:'sourceId', useMine: true, data: {skillId: 5029, src_speed: 100, dst_speed: 1, damage: -100, level: 1, option: 0, type: 8}},
 	                //[Skill: Unknown Skill 5033] [sourceId: 3802723] [targetId: 56093] [tick: 289136454] [src_speed: 270] [dst_speed: 1] [damage: 0] [level: 5] [option: 5] [type: 8]
 				],
 			},
@@ -148,7 +148,7 @@ define(function(require){
 				useAccount: {field: 'sourceId', useMine: true}, // make sure this field is my own account
 				response: [
 					//{cheat: false, type: RES_DROP},
-					{cheat: false, type: RES_CLIENT, send: 0x01de, delay: 0, inField: 'targetId', outField: 'targetId', myField:'sourceId', useMine: true, data: {skillId: 5032, src_speed: 100, dst_speed: 1, damage: -100, level: 1, option: 0, type: 8}},
+					{cheat: true, type: RES_CLIENT, send: 0x01de, delay: 0, inField: 'targetId', outField: 'targetId', myField:'sourceId', useMine: true, data: {skillId: 5032, src_speed: 100, dst_speed: 1, damage: -100, level: 1, option: 0, type: 8}},
 	                //[Skill: Unknown Skill 5033] [sourceId: 3802723] [targetId: 56093] [tick: 289136454] [src_speed: 270] [dst_speed: 1] [damage: 0] [level: 5] [option: 5] [type: 8]
 				],
 			},
@@ -229,18 +229,13 @@ define(function(require){
 				useAccount: {field: null, useMine: true}, // make sure this field is my own account
 				response: [
 					{cheat: true, type: RES_MODIFY, data: {skillId: 93, option: 0}}, // replace with Sense, and make it 1 hit
-					//{cheat: true, type: RES_SERVER, send: 0x0113, delay: 300, inField: 'targetId', myField:'targetId', useMine: false, data: {skillId: 2294, lv: 3}}, 
-					//{cheat: true, type: RES_SERVER, send: 0x0113, delay: 300, inField: 'targetId', myField:'targetId', useMine: false, data: {skillId: 2297, lv: 3}}, 
 				],
 			},
 			{
 				filter: {skillId: 86}, // cast waterball
 				useAccount: {field: null, useMine: false}, // make sure this field is my own account
 				response: [
-					{cheat: true, type: RES_MODIFY, data: {option: 0, type: 5, src_speed: 100}}, // replace with Sense, and make it 1 hit
-					//{cheat: false, type: RES_SPEECH, delay: 0, data: {msg: 'waterball'}},
-					//{cheat: true, type: RES_SERVER, send: 0x0113, delay: 300, inField: 'targetId', myField:'targetId', useMine: false, data: {skillId: 2294, lv: 3}}, 
-					//{cheat: true, type: RES_SERVER, send: 0x0113, delay: 300, inField: 'targetId', myField:'targetId', useMine: false, data: {skillId: 2297, lv: 3}}, 
+					{cheat: true, type: RES_MODIFY, data: {option: 0, type: 5, src_speed: 100}}, // Remove the cast animation from waterball
 				],
 			},
 			{
@@ -283,14 +278,14 @@ define(function(require){
 				filter: {skillId: 5033, src_speed: function(x) { return x > 100; } },	// drop picky peck
 				useAccount: {field: 'sourceId', useMine: true}, // make sure this field is my own account
 				response: [
-					{cheat: false, type: RES_MODIFY, data: {src_speed: 100}}, //  make it 1 hit
+					{cheat: false, type: RES_MODIFY, data: {src_speed: 100}}, //  Speed up animations
 				],
 			},
 			{
 				filter: {src_speed: function(x) { return x > 100; } },	// speed up anything
 				useAccount: {field: 'sourceId', useMine: true}, // make sure this field is my own account
 				response: [
-					{cheat: false, type: RES_MODIFY, data: {src_speed: 100}}, //  make it 1 hit
+					{cheat: false, type: RES_MODIFY, data: {src_speed: 100}},
 				],
 			},
 			{
@@ -300,22 +295,22 @@ define(function(require){
 					{cheat: false, type: RES_MODIFY, data: {dst_speed: 100}}, //  speed this up
 				],
 			},
-			{
-				filter: {skillId: 2008, sourceId: function(x, info) { return info.accountId !== x}, targetId: function(x, info) { return info.accountId !== x} }, // cast dragon breath
-				useAccount: {field: null, useMine: false}, // make sure this field is my own account
-				response: [
-					{cheat: false, type: RES_MODIFY, data: {skillId: 93}}, // replace with Sense
-					{cheat: false, type: RES_CLIENT, send: 0x011a, delay: 0, inField: 'sourceId', outField: ['sourceId', 'targetId'], myField: null, useMine: false, data: {skillId: 2008, lv: 10}}, 
-				],
-			},
-			{
-				filter: {skillId: 5004, sourceId: function(x, info) { return info.accountId !== x}, targetId: function(x, info) { return info.accountId !== x} }, // cast water dragon breath
-				useAccount: {field: null, useMine: false}, // make sure this field is my own account
-				response: [
-					{cheat: false, type: RES_MODIFY, data: {skillId: 93}}, // replace with Sense
-					{cheat: false, type: RES_CLIENT, send: 0x011a, delay: 0, inField: 'sourceId', outField: ['sourceId', 'targetId'], myField: null, useMine: false, data: {skillId: 5004, lv: 10}}, 
-				],
-			},
+	//		{
+	//			filter: {skillId: 2008, sourceId: function(x, info) { return info.accountId !== x}, targetId: function(x, info) { return info.accountId !== x} }, // cast dragon breath
+	//			useAccount: {field: null, useMine: false}, // make sure this field is my own account
+	//			response: [
+	//				{cheat: false, type: RES_MODIFY, data: {skillId: 93}}, // replace with Sense
+	//				{cheat: false, type: RES_CLIENT, send: 0x011a, delay: 0, inField: 'sourceId', outField: ['sourceId', 'targetId'], myField: null, useMine: false, data: {skillId: 2008, lv: 10}}, 
+	//			],
+	//		},
+	//		{
+	//			filter: {skillId: 5004, sourceId: function(x, info) { return info.accountId !== x}, targetId: function(x, info) { return info.accountId !== x} }, // cast water dragon breath
+	//			useAccount: {field: null, useMine: false}, // make sure this field is my own account
+	//			response: [
+	//				{cheat: false, type: RES_MODIFY, data: {skillId: 93}}, // replace with Sense
+	//				{cheat: false, type: RES_CLIENT, send: 0x011a, delay: 0, inField: 'sourceId', outField: ['sourceId', 'targetId'], myField: null, useMine: false, data: {skillId: 5004, lv: 10}}, 
+	//			],
+	//		},
 	//		{
 	//			filter: {skillId: 5004}, // cast water dragon breath
 	//			useAccount: {field: null, useMine: false}, // make sure this field is my own account
