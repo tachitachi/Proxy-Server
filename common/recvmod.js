@@ -343,10 +343,10 @@ define(function(require){
 
 	//	0x0229: [
 	//		{
-	//			filter: {option: 64, opt1: 0, opt2: 0}, // cast Full Divest
+	//			filter: {option: 64, opt1: 0, opt2: 0}, // someone goes into feint bomb
 	//			useAccount: {field: 'ID', useMine: false}, // make sure this field is my own account
 	//			response: [
-	//				{cheat: true, type: RES_MODIFY, data: {option: 0}}, // replace with Divest Shield
+	//				{cheat: true, type: RES_MODIFY, data: {option: 1}}, // keep them visible, add sight effect
 	//			],
 	//		},
 	//	],
@@ -577,20 +577,20 @@ define(function(require){
 	//				{cheat: true, type: RES_MODIFY, data: {wait: 1}}, // Add a cast time
 	//			],
 	//		},
-	//		{
-	//			filter: {
-	//				skillId: function(x){ 
-	//					var dropSkills = new Set([2298, 2293, 2294, 2297]); // Add a cast time to enemy chasers
-	//					return dropSkills.has(x);
-	//				},
-	//				wait: function(x){ return x < 1;}
-	//			},
-	//				
-	//			useAccount: {field: 'sourceId', useMine: false}, // enemey actors
-	//			response: [
-	//				{cheat: true, type: RES_MODIFY, data: {wait: 1}}, // Add a cast time
-	//			],
-	//		},
+			{
+				filter: {
+					skillId: function(x){ 
+						var dropSkills = new Set([2298, 2293, 2294, 2297]); // Add a cast time to enemy chasers
+						return dropSkills.has(x);
+					},
+					wait: function(x){ return x < 1;}
+				},
+					
+				useAccount: {field: 'sourceId', useMine: false}, // enemey actors
+				response: [
+					{cheat: true, type: RES_MODIFY, data: {wait: 1}}, // Add a cast time
+				],
+			},
 	//		{
 	//			filter: {skillId: 2298}, // cast Divest Accessory
 	//			useAccount: {field: 'sourceId', useMine: true}, // make sure this field is my own account
@@ -646,6 +646,7 @@ define(function(require){
 				response: [
 					//{cheat: true, type: RES_CLIENT, send: 0x01d0, delay: 0, inField: null, myField:'sourceId', useMine: true, data: {entity: 5}}, 
 					{cheat: true, type: RES_CLIENT, send: 0x043f, delay: 0, inField: null, myField:'ID', useMine: true, data: {type: 184, tick: 10000, flag: 1, unknown1: 1, unknown2: 0, unknown3: 0}}, // add maya purple
+					{cheat: true, type: RES_CLIENT, send: 0x0983, delay: 0, inField: null, myField:'ID', useMine: true, data: {type: 207,  flag: 1}}, // add mirror image effect
 				],
 			},
 			{
