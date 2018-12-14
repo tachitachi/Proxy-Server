@@ -9389,6 +9389,14 @@ define(function(require){
 				{name: 'info_table', size: 4, type: 'int', log: 2},
 			],
 		},
+		0x09f9: {
+			name: 'unknown_packet_09f9', 
+			length: 143, 
+			log: 2,
+			data: [
+				{name: 'data', size: 141, type: 'byte', log: 2},
+			],
+		},
 		0x09ca: {
 			name: 'skill_entry', 
 			length: -1, 
@@ -9703,6 +9711,23 @@ define(function(require){
 				}, //(index itemId type amount wear_state card1 card2 card3 card4 expiration flags)(v v C v a4 v4 V C)
 			],
 		},
+		0x0a24: {
+			name: 'unknown_packet_0a24', 
+			length: 66, 
+			log: 2,
+			data: [
+				{name: 'data', size: 64, type: 'byte', log: 2},
+			],
+		},
+		0x0a27: {
+			name: 'stat_info_0a27', 
+			length: 8, 
+			log: 1,
+			data: [
+				{name: 'type', size: 2, type: 'int', log: 2},
+				{name: 'val', size: 4, type: 'int', log: 2},
+			],
+		},
 		0x0a30: {
 			name: 'actor_info3', 
 			length: 106, 
@@ -9716,6 +9741,14 @@ define(function(require){
 				{name: 'titleId', size: 4, type: 'int', log: 2},
 			],
 		},
+		0x0a36: {
+			name: 'unknown_packet_0a36', 
+			length: 7, 
+			log: 2,
+			data: [
+				{name: 'data', size: 5, type: 'byte', log: 2},
+			],
+		},
 		0x0a3b: {
 			name: 'misc_effect', 
 			length: -1, 
@@ -9725,6 +9758,14 @@ define(function(require){
 				{name: 'ID', size: 4, type: 'int', log: 2},
 				{name: 'flag', size: 1, type: 'int', log: 2},
 				{name: 'effect', size: -1, type: 'byte', log: 2},
+			],
+		},
+		0x0ade: {
+			name: 'unknown_packet_0ade', 
+			length: 6, 
+			log: 2,
+			data: [
+				{name: 'data', size: 4, type: 'byte', log: 2},
 			],
 		},
 	};
