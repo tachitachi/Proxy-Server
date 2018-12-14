@@ -31,8 +31,17 @@ define(function(require){
 			//console.log('not enough length. Expecting {0} but got {1}'.format(length, this.buffer.length));
 			return null;
 		}
-		
-		if(!length || length > kMaxPacketSize){
+
+		if(!length){
+			if(this.buffer.length < 2){
+				return null;
+			}
+			else{
+				// Unknown packet
+				length = this.buffer.length;
+			}
+		}
+		else if(length > kMaxPacketSize){
 			length = this.buffer.length;
 		}
 		else if(length > this.buffer.length){
