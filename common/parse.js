@@ -2,6 +2,8 @@
 
 define(function(require){
 	var bufutil = require('../bufutil');
+	var DbTable_Items = require('./items');
+	var DbTable_Skills = require('./skills');
 
 	// Global for collecting all packets
 	//PACKET_BUFFER = new PacketBuffer();
@@ -298,6 +300,9 @@ define(function(require){
 				else if(dataName == 'skillId'){
 					var skillName = DbTable_Skills.hasOwnProperty(dataValue) ? '{0} ({1})'.format(DbTable_Skills[dataValue], dataValue) : 'Unknown Skill {0}'.format(dataValue);
 					out.push('[{0}: {1}]'.format('Skill', skillName));
+				}
+				else if(dataType == 'byte'){
+					out.push('[{0}: {1}]'.format(dataName, bufutil.bufPrint(dataValue)));
 				}
 				else{
 					out.push('[{0}: {1}]'.format(dataName, dataValue));

@@ -9713,7 +9713,7 @@ define(function(require){
 				{name: 'partyName', size: 24, type: 'string', log: 2},
 				{name: 'guildName', size: 24, type: 'string', log: 2},
 				{name: 'guildTitle', size: 24, type: 'string', log: 2},
-				{name: 'titleId', size: 4, type: 'string', log: 2},
+				{name: 'titleId', size: 4, type: 'int', log: 2},
 			],
 		},
 		0x0a3b: {

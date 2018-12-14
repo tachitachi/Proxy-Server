@@ -346,7 +346,7 @@ define(function(require){
 	//			filter: {option: 64, opt1: 0, opt2: 0}, // someone goes into feint bomb
 	//			useAccount: {field: 'ID', useMine: false}, // make sure this field is my own account
 	//			response: [
-	//				{cheat: true, type: RES_MODIFY, data: {option: 1}}, // keep them visible, add sight effect
+	//				{cheat: true, type: RES_MODIFY, data: {option: 0}}, // keep them visible, add sight effect
 	//			],
 	//		},
 	//	],

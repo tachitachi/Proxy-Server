@@ -31,6 +31,18 @@ process.on("uncaughtException", function(e) {
     console.log(e.stack);
 });
 
+process.on('SIGINT', function() {
+
+    for(let ID in logStreams){
+    	if(logStreams.hasOwnProperty(ID)){
+    		logStreams[ID].end();
+    		console.log("Closing log file for " + ID);
+    	}
+    }
+
+    process.exit();
+});
+
 
 app.use(express.static(__dirname + '/public'));
 
@@ -69,7 +81,7 @@ mkdirp(sendLogPath, function (err) {
     else console.log('dir created')
 });
 
-
+var logStreams = {};
 
 function HandleLog(packet){
 	var packetBuffer = null;
@@ -130,15 +142,13 @@ function HandleLog(packet){
 		
 		var loggedPacketLength = parsedPackets[p].length + 10;
 		var logPacket = logmessage.CreateLogPacketBuffer(logHeader, {len: loggedPacketLength, time: timestamp, frac: fracTime, data: parsedPackets[p].bytes}, loggedPacketLength);
-		
-		// Write log to disk
-		fs.appendFile(path.join('logs', ID + '_' + sessionTime + '.log'), logPacket, 'binary', function(err) {
-			if(err) {
-				console.log(err);
-			}
-				//console.log(logPacket);
-		}); 
-		
+
+		if(!logStreams.hasOwnProperty(ID)){
+			logStreams[ID] = fs.createWriteStream(path.join('logs', ID + '_' + sessionTime + '.log'))
+		}
+
+		let stream = logStreams[ID];
+		stream.write(logPacket);
 		
 		// make log human readable
 		SendToWeb(webMessage, {message: parsedPackets[p].toHTML(), raw: parsedPackets[p]});
