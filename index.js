@@ -58,6 +58,7 @@ var connectedAccounts = {};
 var inspirationTargets = {};
 var imukeTargets = {};
 var noshieldTargets = {};
+var messageBlacklist = new Set();
 
 function SendToWeb(name, msg){
 	io.emit(name, msg);
@@ -371,6 +372,19 @@ io.on('connection', function(socket){
 		// }
 		//recvmod.RECVMOD[data.header].response[data.pos].data[data.field] = data.value;
 		recvmod.RECVMOD[data.header][data.pos].response[0].data[data.field] = data.value;
+	});
+
+	socket.on('add to blacklist', function(data){
+		if(data.hasOwnProperty('ID')){
+			messageBlacklist.add(data.ID);
+
+			fs.appendFile('blacklist.txt', '{0}\n'.format(data.ID), function(err) {
+				if(err){
+					console.log('Failed to add [{0}] to blacklist'.format(data.ID));
+				}
+			});
+
+		}
 	});
 	
 	// socket.on('refill', function(data){
@@ -952,12 +966,18 @@ function HandleRecv(packet, accountInfo, proxySocket, serviceSocket){
 		break;
 	case 0x09de:
 		//private_message
+		var ID = packet.data[recv.RECV[packet.header].datamap.ID.index].value;
+		var name = packet.data[recv.RECV[packet.header].datamap.name.index].value;
+		var msg = packet.data[recv.RECV[packet.header].datamap.msg.index].value;
+
+		console.log('[private]', ID, name, msg);
+
+		if(messageBlacklist.has(ID)){
+			dropPacket = true;
+		}
+
 		if(accountInfo.isInChatroom || accountInfo.isVending){
 			// email notification
-
-			var ID = packet.data[recv.RECV[packet.header].datamap.ID.index].value;
-			var name = packet.data[recv.RECV[packet.header].datamap.name.index].value;
-			var msg = packet.data[recv.RECV[packet.header].datamap.msg.index].value;
 
 			console.log('Email notification [private]', ID, name, msg);
 
@@ -2205,6 +2225,25 @@ fs.readFile('proxyservers.txt', 'utf8', function(err, results){
 		console.log(source_ip + ':' + source_port + ' -> 127.0.0.1:' + target_port);
 		net.createServer(CreateRequest(source_ip, source_port)).listen(target_port);
 	}
-})
+});
+
+fs.readFile('blacklist.txt', 'utf8', function(err, results){
+
+	if (err){
+		console.log('err', err);
+	}
+
+	let lines = results.split('\n');
+	for(let i = 0; i < lines.length; i++){
+		let line = lines[i].trim();
+		if(line.length == 0 || line[0] === '#'){
+			continue;
+		}
+		let blacklistId = parseInt(line);
+		messageBlacklist.add(blacklistId);
+
+		console.log('Blacklisting [{0}]'.format(blacklistId));
+	}
+});
  
 net.createServer(LogRequest()).listen(5555);

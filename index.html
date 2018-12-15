@@ -98,56 +98,64 @@
   
 	<div class="content">
 	
-		<button id="toggleRecvLogging">Toggle Recv Logging</button>
-		<button id="toggleSendLogging">Toggle Send Logging</button>
-		<button id="toggleNodelay">Toggle Nodelay</button>
-		<button id="togglePneumaGrid">Toggle Pneuma Grid</button>
-		<button id="toggleInfoTimer">Toggle Info Timer</button>
+		<div class="section">
+			<button id="toggleRecvLogging">Toggle Recv Logging</button>
+			<button id="toggleSendLogging">Toggle Send Logging</button>
+			<button id="toggleNodelay">Toggle Nodelay</button>
+			<button id="togglePneumaGrid">Toggle Pneuma Grid</button>
+			<button id="toggleInfoTimer">Toggle Info Timer</button>
+			
+			<select id="accountSelect">
+				<option value="1851380">Itachi</option>
+				<option value="3771195">Free Bwings</option>
+				<option value="3802723">Tofu</option>
+				<option value="4769929">Chemical Wedding</option>
+				<option value="3913955">Lilitrash</option>
+				<option value="4227015">Vendor</option>
+				<option value="2299080">Nova</option>
+			</select>
+		</div>
 		
-		<select id="accountSelect">
-			<option value="1851380">Itachi</option>
-			<option value="3771195">Free Bwings</option>
-			<option value="3802723">Tofu</option>
-			<option value="4769929">Chemical Wedding</option>
-			<option value="3913955">Lilitrash</option>
-			<option value="4227015">Vendor</option>
-			<option value="2299080">Nova</option>
-		</select>
+		<div class="section">
+			<button id="clientPacket">Send To Client</button>
+			<input id="inClientPacket"></input>
+			<button id="serverPacket">Send To Server</button>
+			<input id="inServerPacket"></input>
+
+			<button id="addBlacklist">Add to Blacklist</button>
+			<input id="inBlacklistId"></input>
+		</div>
 		
-		
-		<button id="clientPacket">Send To Client</button>
-		<input id="inClientPacket"></input>
-		<button id="serverPacket">Send To Server</button>
-		<input id="inServerPacket"></input>
-		
-		
-		<button id="changeJob">Change Job</button>
-		<select id="jobSelect">
-			<option value="ef 0f">Shadow Chaser</option>
-			<option value="0c 10">Baby Shadow Chaser</option>
-			<option value="09 00">Wizard</option>
-			<option value="0f 00">Monk</option>
-			<option value="b0 0f">Champion</option>
-			<option value="ed 0f">Sura</option>
-			<option value="c6 0f">Baby Monk</option>
-			<option value="0a 10">Baby Sura</option>
-		</select>
-		
-		
-		<button id="monsterTransform">Monster Transform</button>
-		<select id="monsterSelect">
-			<option value="0">None</option>
-			<option value="1751">Valkyrie Randgris</option>
-			<option value="2238">Champion Chen</option>
-			<option value="2239">Stalker Gertie</option>
-			<option value="1874">Beelzebub</option>
-			<option value="1370">Succubus</option>
-			<option value="1374">Incubus</option>
-			<option value="1109">Deviruchi</option>
-			<option value="2319">Buwaya</option>
-			<option value="2529">Faceworm Queen</option>
-			<option value="1721">Dragon Egg</option>
-		</select>
+
+		<div class="section">
+			<button id="changeJob">Change Job</button>
+			<select id="jobSelect">
+				<option value="ef 0f">Shadow Chaser</option>
+				<option value="0c 10">Baby Shadow Chaser</option>
+				<option value="09 00">Wizard</option>
+				<option value="0f 00">Monk</option>
+				<option value="b0 0f">Champion</option>
+				<option value="ed 0f">Sura</option>
+				<option value="c6 0f">Baby Monk</option>
+				<option value="0a 10">Baby Sura</option>
+			</select>
+			
+			
+			<button id="monsterTransform">Monster Transform</button>
+			<select id="monsterSelect">
+				<option value="0">None</option>
+				<option value="1751">Valkyrie Randgris</option>
+				<option value="2238">Champion Chen</option>
+				<option value="2239">Stalker Gertie</option>
+				<option value="1874">Beelzebub</option>
+				<option value="1370">Succubus</option>
+				<option value="1374">Incubus</option>
+				<option value="1109">Deviruchi</option>
+				<option value="2319">Buwaya</option>
+				<option value="2529">Faceworm Queen</option>
+				<option value="1721">Dragon Egg</option>
+			</select>
+	</div>
 		
 		<div id="accountInfoSection">
 		
@@ -458,6 +466,16 @@
 				socket.emit('send to server', packet);
 			}
 		}
+
+		function AddToBlacklist(){
+
+			var id = $('#inBlacklistId').val();
+			
+			if(id != ''){				
+				id = parseInt(id);
+				socket.emit('add to blacklist', {ID: id});
+			}
+		}
 		
 		function ChangeJob(){
 			var value = $('#accountSelect').val();
@@ -522,6 +540,7 @@
 		
 		$('#clientPacket').click(SendClientPacket);
 		$('#serverPacket').click(SendServerPacket);
+		$('#addBlacklist').click(AddToBlacklist);
 		
 		$('#changeJob').click(ChangeJob);
 		$('#monsterTransform').click(MonsterTransform);
